@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { Timer, Settings, BarChart3, User, Keyboard, Sparkles, SkipForward } from "lucide-react"
+import { Settings, BarChart3, User, Keyboard, Sparkles, SkipForward } from "lucide-react"
 import { TaskList } from "@/components/task-list"
 import { SettingsDialog } from "@/components/settings-dialog"
 import { ReportDialog } from "@/components/report-dialog"
@@ -165,9 +165,13 @@ export default function PomodoroTimer() {
       <header className="border-b border-border">
         <div className="max-w-3xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Timer className="h-5 w-5" />
+            <img
+              src="/codefocus_logo_medium_no_bg.webp"
+              alt="CodeFocus"
+              className="h-10 w-auto dark:invert"
+            />
             <span className="font-medium tracking-tight">
-              CodeFocus<span className="text-muted-foreground">.io</span>
+              codefocus<span className="text-muted-foreground">.io</span>
             </span>
           </div>
           <div className="flex items-center gap-0.5 sm:gap-1">
