@@ -3,6 +3,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme inline {
+  --font-montserrat: var(--font-montserrat);
+}
+
 :root {
   --background: #ffffff;
   --foreground: #0a0a0a;

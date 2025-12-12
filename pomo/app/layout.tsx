@@ -6,10 +6,11 @@ import "./globals.css"
 
 import { ThemeProvider } from "@/components/theme-provider"
 
-import { Geist_Mono as V0_Font_Geist_Mono } from 'next/font/google'
+import { Geist_Mono as V0_Font_Geist_Mono, Montserrat } from 'next/font/google'
 
 // Initialize fonts
 const _geistMono = V0_Font_Geist_Mono({ subsets: ['latin'], weight: ["100","200","300","400","500","600","700","800","900"] })
+const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-montserrat' })
 
 export const metadata: Metadata = {
   title: "CodeFocus.io — Pomodoro Timer",
@@ -23,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`font-sans antialiased`}>
+      <body className={`font-sans antialiased ${montserrat.variable}`}>
         <ThemeProvider>{children}</ThemeProvider>
         <Analytics />
       </body>

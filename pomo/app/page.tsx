@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { Settings, BarChart3, User, Keyboard, Sparkles, SkipForward } from "lucide-react"
+import { Settings, BarChart3, User, Keyboard, Sparkles, SkipForward, Timer } from "lucide-react"
 import { TaskList } from "@/components/task-list"
 import { SettingsDialog } from "@/components/settings-dialog"
 import { ReportDialog } from "@/components/report-dialog"
@@ -170,7 +170,7 @@ export default function PomodoroTimer() {
               alt="CodeFocus"
               className="h-10 w-auto dark:invert"
             />
-            <span className="font-medium tracking-tight">
+            <span className="font-[family-name:var(--font-montserrat)] font-semibold tracking-tight text-lg">
               codefocus<span className="text-muted-foreground">.io</span>
             </span>
           </div>
