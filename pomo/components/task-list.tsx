@@ -32,7 +32,7 @@ export function TaskList({ tasks, activeTaskId, onSelectTask, onAddTask, onUpdat
           <kbd className="hidden sm:flex h-5 px-1.5 bg-muted text-muted-foreground text-[10px] items-center">T</kbd>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Task options">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -100,6 +100,7 @@ export function TaskList({ tasks, activeTaskId, onSelectTask, onAddTask, onUpdat
                     e.stopPropagation()
                     onDeleteTask(task.id)
                   }}
+                  aria-label="Delete task"
                 >
                   <Trash2 className="h-3 w-3" />
                 </Button>

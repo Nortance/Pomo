@@ -62,6 +62,7 @@ export function AddTaskDialog({ open, onOpenChange, onAddTask }: AddTaskDialogPr
                 size="icon"
                 className="h-9 w-9 bg-transparent"
                 onClick={() => setEstimatedPomodoros((prev) => prev + 1)}
+                aria-label="Increase pomodoros"
               >
                 <ChevronUp className="h-4 w-4" />
               </Button>
@@ -70,6 +71,7 @@ export function AddTaskDialog({ open, onOpenChange, onAddTask }: AddTaskDialogPr
                 size="icon"
                 className="h-9 w-9 bg-transparent"
                 onClick={() => setEstimatedPomodoros((prev) => Math.max(1, prev - 1))}
+                aria-label="Decrease pomodoros"
               >
                 <ChevronDown className="h-4 w-4" />
               </Button>

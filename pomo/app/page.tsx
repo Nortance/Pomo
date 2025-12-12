@@ -206,7 +206,7 @@ export default function PomodoroTimer() {
               </Button>
             </Link>
             <ThemeToggle />
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShortcutsOpen(true)}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShortcutsOpen(true)} aria-label="Keyboard shortcuts">
               <Keyboard className="h-4 w-4" />
             </Button>
           </div>
@@ -301,6 +301,7 @@ export default function PomodoroTimer() {
                 size="icon"
                 onClick={handleSkip}
                 className="h-11 w-11 transition-all duration-200 hover:bg-muted bg-transparent"
+                aria-label="Skip to next session"
               >
                 <SkipForward className="h-4 w-4" />
               </Button>
