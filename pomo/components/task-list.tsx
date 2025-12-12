@@ -51,7 +51,7 @@ export function TaskList({ tasks, activeTaskId, onSelectTask, onAddTask, onUpdat
           <div className="border border-dashed border-border p-6 sm:p-8 text-center">
             <Target className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 sm:mb-3 text-muted-foreground/50" />
             <p className="text-xs sm:text-sm text-muted-foreground mb-1">No tasks yet</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground/70">Add a task to track your focus sessions</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Add a task to track your focus sessions</p>
           </div>
         )}
 

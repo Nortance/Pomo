@@ -180,6 +180,7 @@ export default function PomodoroTimer() {
               size="sm"
               onClick={() => setReportOpen(true)}
               className="text-xs gap-1.5 h-8 px-2.5 sm:px-3"
+              aria-label="Report"
             >
               <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline">Report</span>
@@ -192,6 +193,7 @@ export default function PomodoroTimer() {
               size="sm"
               onClick={() => setSettingsOpen(true)}
               className="text-xs gap-1.5 h-8 px-2.5 sm:px-3"
+              aria-label="Settings"
             >
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">Settings</span>
@@ -199,7 +201,7 @@ export default function PomodoroTimer() {
                 S
               </kbd>
             </Button>
-            <Link href="/signin">
+            <Link href="/signin" aria-label="Sign In">
               <Button variant="ghost" size="sm" className="text-xs gap-1.5 h-8 px-2.5 sm:px-3">
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">Sign In</span>
