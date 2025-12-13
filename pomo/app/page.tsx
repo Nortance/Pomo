@@ -1,97 +1,129 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { Settings, BarChart3, User, Keyboard, Sparkles, SkipForward, Timer } from "lucide-react"
+import { Settings, BarChart3, User, Keyboard, Sparkles, SkipForward } from "lucide-react"
 import { TaskList } from "@/components/task-list"
 import { SettingsDialog } from "@/components/settings-dialog"
 import { ReportDialog } from "@/components/report-dialog"
 import { ShortcutsDialog } from "@/components/shortcuts-dialog"
 import { AddTaskDialog } from "@/components/add-task-dialog"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { StatsCard } from "@/components/stats-card"
+import { StreakHeatmap } from "@/components/streak-heatmap"
+import { GoalProgress } from "@/components/goal-progress"
+import { useAppState } from "@/hooks/use-app-state"
+import { useState } from "react"
 import Link from "next/link"
-
-type TimerMode = "pomodoro" | "shortBreak" | "longBreak"
-
-interface Task {
-  id: string
-  title: string
-  estimatedPomodoros: number
-  completedPomodoros: number
-  note?: string
-  completed: boolean
-}
+import type { TimerMode } from "@/lib/types"
 
 export default function PomodoroTimer() {
-  const [mode, setMode] = useState<TimerMode>("pomodoro")
-  const [isRunning, setIsRunning] = useState(false)
-  const [timeLeft, setTimeLeft] = useState(25 * 60)
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [activeTaskId, setActiveTaskId] = useState<string | null>(null)
-  const [completedPomodoros, setCompletedPomodoros] = useState(0)
-
+  // Dialog state (UI only, doesn't need persistence)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [reportOpen, setReportOpen] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [addTaskOpen, setAddTaskOpen] = useState(false)
 
-  const [settings, setSettings] = useState({
-    pomodoro: 25,
-    shortBreak: 5,
-    longBreak: 15,
-    autoStartBreaks: false,
-    autoStartPomodoros: false,
-    longBreakInterval: 4,
-  })
+  // Unified app state
+  const {
+    // State
+    stats,
+    tasks,
+    settings,
+    goals,
+    timer,
+    sessionPomodoros,
+    activeTaskId,
+    isLoaded,
 
-  const durations = {
-    pomodoro: settings.pomodoro * 60,
-    shortBreak: settings.shortBreak * 60,
-    longBreak: settings.longBreak * 60,
-  }
+    // Stats actions
+    recordPomodoro,
+    recordSkip,
 
-  const progress = 1 - timeLeft / durations[mode]
-  const circumference = 2 * Math.PI * 140 // radius = 140
-  const strokeDashoffset = circumference * (1 - progress)
+    // Task actions
+    addTask,
+    updateTask,
+    deleteTask,
+    completeTaskPomodoro,
+    setActiveTask,
+
+    // Settings actions
+    updateSettings,
+
+    // Goals actions
+    setGoals,
+
+    // Timer actions
+    setTimerMode,
+    setTimerRunning,
+    setTimeLeft,
+    resetSessionPomodoros,
+
+    // Computed values
+    todayStats,
+    focusScore,
+    level,
+    goalProgress,
+    heatmapData,
+    totalTime,
+    activeTask,
+  } = useAppState()
+
+  // Use startDuration for accurate progress (not affected by settings changes mid-timer)
+  const progress = timer.startDuration > 0 ? 1 - timer.timeLeft / timer.startDuration : 0
+  const circumference = 2 * Math.PI * 140
 
   const switchMode = useCallback(
     (newMode: TimerMode) => {
-      setMode(newMode)
-      setTimeLeft(durations[newMode])
-      setIsRunning(false)
+      setTimerMode(newMode)
     },
-    [settings],
+    [setTimerMode],
   )
 
+  // Timer countdown effect
   useEffect(() => {
     let interval: NodeJS.Timeout
 
-    if (isRunning && timeLeft > 0) {
+    if (timer.isRunning && timer.timeLeft > 0) {
       interval = setInterval(() => {
+        // Use functional update to avoid stale closure
         setTimeLeft((prev) => prev - 1)
       }, 1000)
-    } else if (timeLeft === 0) {
-      if (mode === "pomodoro") {
-        setCompletedPomodoros((prev) => prev + 1)
+    } else if (timer.timeLeft === 0) {
+      if (timer.mode === "pomodoro") {
+        // Pass actual focused duration (startDuration in minutes) for accurate tracking
+        recordPomodoro(Math.round(timer.startDuration / 60))
         if (activeTaskId) {
-          setTasks((prev) =>
-            prev.map((task) =>
-              task.id === activeTaskId ? { ...task, completedPomodoros: task.completedPomodoros + 1 } : task,
-            ),
-          )
+          completeTaskPomodoro(activeTaskId)
         }
-        const nextMode = (completedPomodoros + 1) % settings.longBreakInterval === 0 ? "longBreak" : "shortBreak"
+        // Check if this completed pomodoro triggers a long break
+        // sessionPomodoros will be incremented by recordPomodoro, so we add 1 to current value
+        const nextMode = (sessionPomodoros + 1) % settings.longBreakInterval === 0 ? "longBreak" : "shortBreak"
         switchMode(nextMode)
-        if (settings.autoStartBreaks) setIsRunning(true)
+        if (settings.autoStartBreaks) setTimerRunning(true)
       } else {
         switchMode("pomodoro")
-        if (settings.autoStartPomodoros) setIsRunning(true)
+        if (settings.autoStartPomodoros) setTimerRunning(true)
       }
     }
 
     return () => clearInterval(interval)
-  }, [isRunning, timeLeft, mode, completedPomodoros, activeTaskId, settings, switchMode])
+  }, [
+    timer.isRunning,
+    timer.timeLeft,
+    timer.mode,
+    timer.startDuration,
+    sessionPomodoros,
+    activeTaskId,
+    settings,
+    switchMode,
+    recordPomodoro,
+    completeTaskPomodoro,
+    setTimeLeft,
+    setTimerRunning,
+  ])
 
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
@@ -99,7 +131,7 @@ export default function PomodoroTimer() {
       switch (e.key) {
         case " ":
           e.preventDefault()
-          setIsRunning((prev) => !prev)
+          setTimerRunning(!timer.isRunning)
           break
         case "1":
           switchMode("pomodoro")
@@ -112,6 +144,7 @@ export default function PomodoroTimer() {
           break
         case "t":
         case "T":
+          e.preventDefault()
           setAddTaskOpen(true)
           break
         case "r":
@@ -130,7 +163,7 @@ export default function PomodoroTimer() {
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [switchMode])
+  }, [switchMode, timer.isRunning, setTimerRunning])
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -138,26 +171,22 @@ export default function PomodoroTimer() {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
   }
 
-  const handleAddTask = (task: Omit<Task, "id" | "completedPomodoros" | "completed">) => {
-    const newTask: Task = {
-      ...task,
-      id: Date.now().toString(),
-      completedPomodoros: 0,
-      completed: false,
-    }
-    setTasks((prev) => [...prev, newTask])
+  const handleAddTask = (task: { title: string; estimatedPomodoros: number; note?: string }) => {
+    addTask(task)
   }
 
   const handleSkip = () => {
-    if (mode === "pomodoro") {
-      const nextMode = (completedPomodoros + 1) % settings.longBreakInterval === 0 ? "longBreak" : "shortBreak"
-      switchMode(nextMode)
+    if (timer.mode === "pomodoro" && timer.isRunning) {
+      recordSkip()
+    }
+    if (timer.mode === "pomodoro") {
+      // Skip always goes to short break - you didn't complete the pomodoro,
+      // so you don't earn a long break
+      switchMode("shortBreak")
     } else {
       switchMode("pomodoro")
     }
   }
-
-  const activeTask = tasks.find((t) => t.id === activeTaskId)
 
   return (
     <div className="min-h-screen bg-background">
@@ -216,16 +245,32 @@ export default function PomodoroTimer() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-xl mx-auto px-4 py-8 sm:py-12">
-        <div className="border border-border bg-card p-4 sm:p-8 mb-6 sm:mb-8 shadow-sm">
-          {/* Mode Tabs - improved visual distinction */}
+      <main className="max-w-xl mx-auto px-4 py-6 sm:py-10">
+        {isLoaded && (
+          <>
+            <StatsCard
+              focusScore={focusScore}
+              currentStreak={stats.currentStreak}
+              longestStreak={stats.longestStreak}
+              totalHours={totalTime.hours}
+              totalMinutes={totalTime.minutes}
+              todayPomodoros={todayStats.completedPomodoros}
+              level={level}
+              personalRecords={stats.personalRecords}
+            />
+            <GoalProgress goalProgress={goalProgress} />
+          </>
+        )}
+
+        <div className="border border-border bg-card p-4 sm:p-8 mb-4 sm:mb-6 shadow-sm">
+          {/* Mode Tabs */}
           <div className="flex justify-center gap-1 mb-6 sm:mb-10">
             {(["pomodoro", "shortBreak", "longBreak"] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => switchMode(m)}
                 className={`px-3 sm:px-4 py-2 text-xs font-medium tracking-wide transition-all duration-200 ${
-                  mode === m
+                  timer.mode === m
                     ? "bg-foreground text-background border border-foreground"
                     : "text-muted-foreground border border-dashed border-border hover:text-foreground hover:border-foreground"
                 }`}
@@ -238,9 +283,7 @@ export default function PomodoroTimer() {
           {/* Timer Display with Progress Ring */}
           <div className="flex flex-col items-center mb-6 sm:mb-10">
             <div className="relative">
-              {/* SVG Progress Ring */}
               <svg className="w-56 h-56 sm:w-72 sm:h-72 -rotate-90" viewBox="0 0 300 300">
-                {/* Background circle */}
                 <circle
                   cx="150"
                   cy="150"
@@ -250,7 +293,6 @@ export default function PomodoroTimer() {
                   strokeWidth="2"
                   className="text-border"
                 />
-                {/* Progress circle */}
                 <circle
                   cx="150"
                   cy="150"
@@ -260,14 +302,13 @@ export default function PomodoroTimer() {
                   strokeWidth="3"
                   strokeLinecap="square"
                   strokeDasharray={circumference}
-                  strokeDashoffset={strokeDashoffset}
+                  strokeDashoffset={circumference * (1 - progress)}
                   className="text-foreground transition-all duration-1000 ease-linear"
                 />
               </svg>
-              {/* Time display centered in ring */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <div className="text-5xl sm:text-7xl font-light tracking-tighter tabular-nums">
-                  {formatTime(timeLeft)}
+                  {formatTime(timer.timeLeft)}
                 </div>
                 <div className="mt-2 text-center">
                   {activeTask ? (
@@ -276,7 +317,7 @@ export default function PomodoroTimer() {
                     </p>
                   ) : (
                     <p className="text-xs sm:text-sm text-muted-foreground">
-                      {mode === "pomodoro" ? "Time to focus" : mode === "shortBreak" ? "Take a break" : "Time to rest"}
+                      {timer.mode === "pomodoro" ? "Time to focus" : timer.mode === "shortBreak" ? "Take a break" : "Time to rest"}
                     </p>
                   )}
                 </div>
@@ -288,16 +329,16 @@ export default function PomodoroTimer() {
             <Button
               size="lg"
               className={`h-11 px-8 sm:px-12 text-sm font-medium tracking-wide transition-all duration-200 flex items-center justify-center ${
-                isRunning
+                timer.isRunning
                   ? "bg-muted text-foreground hover:bg-muted/80"
                   : "bg-foreground text-background hover:opacity-90"
               }`}
-              onClick={() => setIsRunning(!isRunning)}
+              onClick={() => setTimerRunning(!timer.isRunning)}
             >
-              {isRunning ? "Pause" : "Start"}
+              {timer.isRunning ? "Pause" : "Start"}
               <kbd className="ml-2 mt-0.5 text-[10px] opacity-60 hidden sm:inline">space</kbd>
             </Button>
-            {isRunning && (
+            {timer.isRunning && (
               <Button
                 variant="outline"
                 size="icon"
@@ -312,7 +353,7 @@ export default function PomodoroTimer() {
         </div>
 
         {/* Session Stats */}
-        <div className="flex items-center justify-center gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <div className="flex items-center justify-center gap-4 sm:gap-6 mb-4 sm:mb-6">
           <div className="flex items-center gap-2">
             <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Session</span>
             <div className="flex gap-1">
@@ -320,7 +361,7 @@ export default function PomodoroTimer() {
                 <div
                   key={i}
                   className={`w-1.5 h-1.5 sm:w-2 sm:h-2 transition-colors ${
-                    i < (completedPomodoros % settings.longBreakInterval) ? "bg-foreground" : "bg-border"
+                    i < (sessionPomodoros % settings.longBreakInterval) ? "bg-foreground" : "bg-border"
                   }`}
                 />
               ))}
@@ -329,7 +370,7 @@ export default function PomodoroTimer() {
           <div className="h-4 w-px bg-border" />
           <div className="flex items-center gap-2">
             <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Total</span>
-            <span className="text-xs sm:text-sm tabular-nums font-medium">{completedPomodoros}</span>
+            <span className="text-xs sm:text-sm tabular-nums font-medium">{sessionPomodoros}</span>
           </div>
         </div>
 
@@ -337,11 +378,13 @@ export default function PomodoroTimer() {
         <TaskList
           tasks={tasks}
           activeTaskId={activeTaskId}
-          onSelectTask={setActiveTaskId}
+          onSelectTask={setActiveTask}
           onAddTask={() => setAddTaskOpen(true)}
-          onUpdateTask={(id, updates) => setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)))}
-          onDeleteTask={(id) => setTasks((prev) => prev.filter((t) => t.id !== id))}
+          onUpdateTask={updateTask}
+          onDeleteTask={deleteTask}
         />
+
+        {isLoaded && <div className="mt-6 sm:mt-8"><StreakHeatmap data={heatmapData} /></div>}
 
         {/* Premium Banner */}
         <Link href="/premium" className="block mt-6 sm:mt-8">
@@ -362,13 +405,17 @@ export default function PomodoroTimer() {
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
         settings={settings}
-        onSettingsChange={setSettings}
+        goals={goals}
+        onSettingsChange={updateSettings}
+        onGoalsChange={setGoals}
       />
       <ReportDialog
         open={reportOpen}
         onOpenChange={setReportOpen}
-        completedPomodoros={completedPomodoros}
+        stats={stats}
         tasks={tasks}
+        todayStats={todayStats}
+        goalProgress={goalProgress}
       />
       <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
       <AddTaskDialog open={addTaskOpen} onOpenChange={setAddTaskOpen} onAddTask={handleAddTask} />

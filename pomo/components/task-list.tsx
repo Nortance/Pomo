@@ -81,6 +81,9 @@ export function TaskList({ tasks, activeTaskId, onSelectTask, onAddTask, onUpdat
                 {task.note && <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 truncate">{task.note}</p>}
               </div>
               <div className="flex items-center gap-1 sm:gap-2">
+                {activeTaskId === task.id && (
+                  <span className="text-[10px] sm:text-xs font-medium uppercase tracking-wide">Active</span>
+                )}
                 <div className="flex gap-0.5 mr-1 hidden sm:flex">
                   {Array.from({ length: task.estimatedPomodoros }).map((_, i) => (
                     <div
