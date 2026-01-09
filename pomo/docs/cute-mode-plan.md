@@ -24,9 +24,12 @@ We need: **Cute aesthetics** + **Sensory experience** (sounds).
 **Acceptance Criteria:**
 - [x] `.cute` class defined in `globals.css`
 - [x] Background is rose white (#FFF5F5)
-- [x] Primary color is light pink (#E8919F - adjusted for better contrast)
-- [x] All text has sufficient contrast (WCAG AA)
-- [x] Borders and muted colors use soft mauve tones
+- [x] Primary color is pink (#C05068 - WCAG AA compliant, 4.58:1)
+- [x] All text has sufficient contrast (WCAG AA verified)
+  - Main text: 8.07:1 (AAA)
+  - Muted text: 4.96:1 (AA)
+  - Button text: 4.58:1 (AA)
+- [x] Borders and muted colors use soft mauve tones (#D8C0D0)
 
 ---
 
