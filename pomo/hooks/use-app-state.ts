@@ -1,16 +1,13 @@
 "use client"
 
 import { useState, useEffect, useCallback, useMemo } from "react"
-import type { PersistedState, Stats, Settings, Goals, Task, TimerMode, DayStats } from "@/lib/types"
+import type { PersistedState, Stats, Settings, Goals, Task, TimerMode, DayStats, UnlockedAchievement } from "@/lib/types"
 import { loadState, saveState, defaultState, getToday } from "@/lib/storage"
 import {
-  calculateStreak,
-  calculateFocusScore,
   calculateLevel,
   calculateGoalProgress,
   generateHeatmapData,
   getTodayStats,
-  formatTotalTime,
   addCompletedPomodoro,
   addSkippedPomodoro,
 } from "@/lib/stats"
@@ -201,6 +198,24 @@ export function useAppState() {
     }))
   }, [])
 
+  // === ACHIEVEMENTS ACTIONS ===
+
+  const unlockAchievement = useCallback((achievementId: string) => {
+    setPersisted((prev) => {
+      // Don't add if already unlocked
+      if (prev.achievements.some((a) => a.id === achievementId)) {
+        return prev
+      }
+      return {
+        ...prev,
+        achievements: [
+          ...prev.achievements,
+          { id: achievementId, unlockedAt: new Date().toISOString() },
+        ],
+      }
+    })
+  }, [])
+
   // === SESSION ACTIONS ===
 
   const setActiveTask = useCallback((taskId: string | null) => {
@@ -290,11 +305,6 @@ export function useAppState() {
     [persisted.stats.dailyStats]
   )
 
-  const focusScore = useMemo(
-    () => calculateFocusScore(todayStats, persisted.stats.currentStreak),
-    [todayStats, persisted.stats.currentStreak]
-  )
-
   const level = useMemo(
     () => calculateLevel(persisted.stats.totalFocusMinutes),
     [persisted.stats.totalFocusMinutes]
@@ -310,14 +320,15 @@ export function useAppState() {
     [persisted.stats.dailyStats]
   )
 
-  const totalTime = useMemo(
-    () => formatTotalTime(persisted.stats.totalFocusMinutes),
-    [persisted.stats.totalFocusMinutes]
-  )
-
   const activeTask = useMemo(
     () => persisted.tasks.find((t) => t.id === session.activeTaskId) || null,
     [persisted.tasks, session.activeTaskId]
+  )
+
+  // Computed: unlocked achievement IDs for quick lookup
+  const unlockedAchievementIds = useMemo(
+    () => persisted.achievements.map((a) => a.id),
+    [persisted.achievements]
   )
 
   return {
@@ -326,6 +337,7 @@ export function useAppState() {
     tasks: persisted.tasks,
     settings: persisted.settings,
     goals: persisted.goals,
+    achievements: persisted.achievements,
     timer: session.timer,
     sessionPomodoros: session.sessionPomodoros,
     activeTaskId: session.activeTaskId,
@@ -349,6 +361,9 @@ export function useAppState() {
     // Goals actions
     setGoals,
 
+    // Achievements actions
+    unlockAchievement,
+
     // Timer actions
     setTimerMode,
     setTimerRunning,
@@ -358,11 +373,10 @@ export function useAppState() {
 
     // Computed values
     todayStats,
-    focusScore,
     level,
     goalProgress,
     heatmapData,
-    totalTime,
     activeTask,
+    unlockedAchievementIds,
   }
 }

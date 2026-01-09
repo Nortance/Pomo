@@ -4,6 +4,7 @@ import type { Metadata } from "next"
 import "./globals.css"
 
 import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "@/components/ui/sonner"
 
 import { Geist_Mono as V0_Font_Geist_Mono, Montserrat } from 'next/font/google'
 
@@ -14,10 +15,10 @@ const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-montserrat
 export const metadata: Metadata = {
   // Basic Meta
   title: {
-    default: "CodeFocus.io — Pomodoro Timer for Developers",
-    template: "%s | CodeFocus.io",
+    default: "Free Pomodoro Timer Online — Simple & Fast",
+    template: "%s | CodeFocus",
   },
-  description: "A minimal pomodoro timer for developers and entrepreneurs. Free online focus timer with dark mode, keyboard shortcuts, and clean design to boost your productivity.",
+  description: "Free online pomodoro timer. Track focus sessions, build streaks. No signup, no download. Works on desktop & mobile. Dark mode & keyboard shortcuts included.",
   keywords: [
     "pomodoro timer",
     "pomodoro timer for developers",
@@ -69,15 +70,15 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://codefocus.io",
-    siteName: "CodeFocus.io",
-    title: "CodeFocus.io — Pomodoro Timer for Developers",
-    description: "A minimal pomodoro timer for developers and entrepreneurs. Free online focus timer with dark mode, keyboard shortcuts, and clean design.",
+    siteName: "CodeFocus",
+    title: "Free Pomodoro Timer Online — Simple & Fast",
+    description: "Free online pomodoro timer. Track focus sessions, build streaks. No signup, no download. Works on desktop & mobile.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "CodeFocus.io - Pomodoro Timer for Developers",
+        alt: "Free Pomodoro Timer Online",
         type: "image/png",
       },
     ],
@@ -86,8 +87,8 @@ export const metadata: Metadata = {
   // Twitter
   twitter: {
     card: "summary_large_image",
-    title: "CodeFocus.io — Pomodoro Timer for Developers",
-    description: "A minimal pomodoro timer for developers and entrepreneurs. Free online focus timer with dark mode and keyboard shortcuts.",
+    title: "Free Pomodoro Timer Online — Simple & Fast",
+    description: "Free online pomodoro timer. Track focus sessions, build streaks. No signup, no download. Works on desktop & mobile.",
     images: ["/og-image.png"],
     creator: "@codefocus",
     site: "@codefocus",
@@ -145,8 +146,8 @@ const jsonLd = {
     {
       "@type": "WebApplication",
       "@id": "https://codefocus.io/#app",
-      name: "CodeFocus.io",
-      description: "A minimal pomodoro timer for developers and entrepreneurs. Free online focus timer with dark mode, keyboard shortcuts, and clean design.",
+      name: "Free Pomodoro Timer Online",
+      description: "Free online pomodoro timer. Track focus sessions, build streaks. No signup, no download. Works on desktop & mobile.",
       url: "https://codefocus.io",
       applicationCategory: "ProductivityApplication",
       operatingSystem: "Any",
@@ -183,8 +184,8 @@ const jsonLd = {
       "@type": "WebSite",
       "@id": "https://codefocus.io/#website",
       url: "https://codefocus.io",
-      name: "CodeFocus.io",
-      description: "Pomodoro Timer for Developers",
+      name: "Free Pomodoro Timer Online",
+      description: "Free online pomodoro timer with streak tracking and focus sessions.",
       publisher: {
         "@id": "https://codefocus.io/#organization",
       },
@@ -231,7 +232,10 @@ export default function RootLayout({
         />
       </head>
       <body className={`font-sans antialiased ${montserrat.variable}`}>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          {children}
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   )

@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { Settings, BarChart3, User, Keyboard, Sparkles, SkipForward } from "lucide-react"
+import { Settings, BarChart3, User, Keyboard, Sparkles, SkipForward, Award } from "lucide-react"
 import { TaskList } from "@/components/task-list"
 import { SettingsDialog } from "@/components/settings-dialog"
 import { ReportDialog } from "@/components/report-dialog"
@@ -12,7 +12,12 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { StatsCard } from "@/components/stats-card"
 import { StreakHeatmap } from "@/components/streak-heatmap"
 import { GoalProgress } from "@/components/goal-progress"
+import { AchievementsDialog } from "@/components/achievements-dialog"
+import { LevelUpModal } from "@/components/level-up-modal"
+import { checkNewAchievements } from "@/lib/achievements"
 import { useAppState } from "@/hooks/use-app-state"
+import { useCelebration } from "@/hooks/use-celebration"
+import { useSound } from "@/hooks/use-sound"
 import { useState } from "react"
 import Link from "next/link"
 import type { TimerMode } from "@/lib/types"
@@ -23,6 +28,8 @@ export default function PomodoroTimer() {
   const [reportOpen, setReportOpen] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [addTaskOpen, setAddTaskOpen] = useState(false)
+  const [achievementsOpen, setAchievementsOpen] = useState(false)
+  const [levelUpOpen, setLevelUpOpen] = useState(false)
 
   // Unified app state
   const {
@@ -53,6 +60,10 @@ export default function PomodoroTimer() {
     // Goals actions
     setGoals,
 
+    // Achievements actions
+    unlockAchievement,
+    unlockedAchievementIds,
+
     // Timer actions
     setTimerMode,
     setTimerRunning,
@@ -61,13 +72,71 @@ export default function PomodoroTimer() {
 
     // Computed values
     todayStats,
-    focusScore,
     level,
     goalProgress,
     heatmapData,
-    totalTime,
     activeTask,
   } = useAppState()
+
+  // Celebration hook for pomodoro completion
+  const { celebratePomodoroComplete, celebrateDailyGoal, celebrateAchievement, celebrateLevelUp } = useCelebration({
+    soundEnabled: settings.soundEnabled,
+  })
+
+  // Sound hook for UI interactions
+  const { playClick } = useSound(settings.soundEnabled)
+
+  // Track previous stats to detect new achievements and level-ups
+  const [prevTotalPomodoros, setPrevTotalPomodoros] = useState(0)
+  const [prevLevelTier, setPrevLevelTier] = useState(0)
+
+  // Check for new achievements when stats change (after pomodoro completion)
+  useEffect(() => {
+    if (!isLoaded) return
+    // Only check when total pomodoros increases
+    if (stats.totalPomodoros <= prevTotalPomodoros) {
+      setPrevTotalPomodoros(stats.totalPomodoros)
+      return
+    }
+    setPrevTotalPomodoros(stats.totalPomodoros)
+
+    // Check for new achievements
+    const context = {
+      justCompletedPomodoro: true,
+      currentHour: new Date().getHours(),
+      sessionPomodoros: sessionPomodoros,
+    }
+    const newAchievements = checkNewAchievements(stats, unlockedAchievementIds, context)
+
+    // Unlock and celebrate each new achievement
+    let delay = 2000 // Start after the pomodoro celebration
+    newAchievements.forEach((achievement) => {
+      setTimeout(() => {
+        unlockAchievement(achievement.id)
+        celebrateAchievement(achievement.name, achievement.description)
+      }, delay)
+      delay += 2000 // Stagger multiple achievements
+    })
+  }, [stats.totalPomodoros, isLoaded, stats, unlockedAchievementIds, sessionPomodoros, unlockAchievement, celebrateAchievement, prevTotalPomodoros])
+
+  // Check for level-ups
+  useEffect(() => {
+    if (!isLoaded) return
+    // Initialize on first load
+    if (prevLevelTier === 0) {
+      setPrevLevelTier(level.tier)
+      return
+    }
+    // Check if level tier increased
+    if (level.tier > prevLevelTier) {
+      setPrevLevelTier(level.tier)
+      // Show level-up modal and celebration after a short delay
+      setTimeout(() => {
+        celebrateLevelUp(level.name, level.tier)
+        setLevelUpOpen(true)
+      }, 3000) // After pomodoro celebration and potential achievements
+    }
+  }, [level.tier, isLoaded, level.name, prevLevelTier, celebrateLevelUp])
 
   // Use startDuration for accurate progress (not affected by settings changes mid-timer)
   const progress = timer.startDuration > 0 ? 1 - timer.timeLeft / timer.startDuration : 0
@@ -92,9 +161,16 @@ export default function PomodoroTimer() {
     } else if (timer.timeLeft === 0) {
       if (timer.mode === "pomodoro") {
         // Pass actual focused duration (startDuration in minutes) for accurate tracking
-        recordPomodoro(Math.round(timer.startDuration / 60))
+        const xpEarned = Math.round(timer.startDuration / 60)
+        recordPomodoro(xpEarned)
         if (activeTaskId) {
           completeTaskPomodoro(activeTaskId)
+        }
+        // Celebrate completion!
+        celebratePomodoroComplete(xpEarned)
+        // Check if daily goal was just completed
+        if (goals.dailyPomodoros && todayStats.completedPomodoros + 1 === goals.dailyPomodoros) {
+          setTimeout(() => celebrateDailyGoal(), 1500)
         }
         // Check if this completed pomodoro triggers a long break
         // sessionPomodoros will be incremented by recordPomodoro, so we add 1 to current value
@@ -116,11 +192,15 @@ export default function PomodoroTimer() {
     sessionPomodoros,
     activeTaskId,
     settings,
+    goals,
+    todayStats.completedPomodoros,
     switchMode,
     recordPomodoro,
     completeTaskPomodoro,
     setTimeLeft,
     setTimerRunning,
+    celebratePomodoroComplete,
+    celebrateDailyGoal,
   ])
 
   // Keyboard shortcuts
@@ -131,6 +211,7 @@ export default function PomodoroTimer() {
       switch (e.key) {
         case " ":
           e.preventDefault()
+          playClick()
           setTimerRunning(!timer.isRunning)
           break
         case "1":
@@ -163,7 +244,7 @@ export default function PomodoroTimer() {
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [switchMode, timer.isRunning, setTimerRunning])
+  }, [switchMode, timer.isRunning, setTimerRunning, playClick])
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -207,6 +288,16 @@ export default function PomodoroTimer() {
             <Button
               variant="ghost"
               size="sm"
+              onClick={() => setAchievementsOpen(true)}
+              className="text-xs gap-1.5 h-8 px-2.5 sm:px-3"
+              aria-label="Achievements"
+            >
+              <Award className="h-4 w-4" />
+              <span className="hidden sm:inline">Badges</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setReportOpen(true)}
               className="text-xs gap-1.5 h-8 px-2.5 sm:px-3"
               aria-label="Report"
@@ -246,23 +337,9 @@ export default function PomodoroTimer() {
 
       {/* Main Content */}
       <main className="max-w-xl mx-auto px-4 py-6 sm:py-10">
-        {isLoaded && (
-          <>
-            <StatsCard
-              focusScore={focusScore}
-              currentStreak={stats.currentStreak}
-              longestStreak={stats.longestStreak}
-              totalHours={totalTime.hours}
-              totalMinutes={totalTime.minutes}
-              todayPomodoros={todayStats.completedPomodoros}
-              level={level}
-              personalRecords={stats.personalRecords}
-            />
-            <GoalProgress goalProgress={goalProgress} />
-          </>
-        )}
+        {isLoaded && <GoalProgress goalProgress={goalProgress} />}
 
-        <div className="border border-border bg-card p-4 sm:p-8 mb-4 sm:mb-6 shadow-sm">
+        <div className="border border-border bg-card p-4 sm:p-8 shadow-sm">
           {/* Mode Tabs */}
           <div className="flex justify-center gap-1 mb-6 sm:mb-10">
             {(["pomodoro", "shortBreak", "longBreak"] as const).map((m) => (
@@ -333,7 +410,10 @@ export default function PomodoroTimer() {
                   ? "bg-muted text-foreground hover:bg-muted/80"
                   : "bg-foreground text-background hover:opacity-90"
               }`}
-              onClick={() => setTimerRunning(!timer.isRunning)}
+              onClick={() => {
+                playClick()
+                setTimerRunning(!timer.isRunning)
+              }}
             >
               {timer.isRunning ? "Pause" : "Start"}
               <kbd className="ml-2 mt-0.5 text-[10px] opacity-60 hidden sm:inline">space</kbd>
@@ -353,7 +433,7 @@ export default function PomodoroTimer() {
         </div>
 
         {/* Session Stats */}
-        <div className="flex items-center justify-center gap-4 sm:gap-6 mb-4 sm:mb-6">
+        <div className="flex items-center justify-center gap-4 sm:gap-6 mt-6 sm:mt-8">
           <div className="flex items-center gap-2">
             <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Session</span>
             <div className="flex gap-1">
@@ -375,16 +455,33 @@ export default function PomodoroTimer() {
         </div>
 
         {/* Task List */}
-        <TaskList
-          tasks={tasks}
-          activeTaskId={activeTaskId}
-          onSelectTask={setActiveTask}
-          onAddTask={() => setAddTaskOpen(true)}
-          onUpdateTask={updateTask}
-          onDeleteTask={deleteTask}
-        />
+        <div className="mt-6 sm:mt-8">
+          <TaskList
+            tasks={tasks}
+            activeTaskId={activeTaskId}
+            onSelectTask={setActiveTask}
+            onAddTask={() => setAddTaskOpen(true)}
+            onUpdateTask={updateTask}
+            onDeleteTask={deleteTask}
+          />
+        </div>
 
-        {isLoaded && <div className="mt-6 sm:mt-8"><StreakHeatmap data={heatmapData} /></div>}
+        {/* Stats & Activity */}
+        {isLoaded && (
+          <div className="mt-6 sm:mt-8">
+            <StatsCard
+              totalXP={stats.totalFocusMinutes}
+              currentStreak={stats.currentStreak}
+              longestStreak={stats.longestStreak}
+              todayPomodoros={todayStats.completedPomodoros}
+              level={level}
+              personalRecords={stats.personalRecords}
+            />
+            <div className="mt-4 sm:mt-6">
+              <StreakHeatmap data={heatmapData} />
+            </div>
+          </div>
+        )}
 
         {/* Premium Banner */}
         <Link href="/premium" className="block mt-6 sm:mt-8">
@@ -419,6 +516,16 @@ export default function PomodoroTimer() {
       />
       <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
       <AddTaskDialog open={addTaskOpen} onOpenChange={setAddTaskOpen} onAddTask={handleAddTask} />
+      <AchievementsDialog
+        open={achievementsOpen}
+        onOpenChange={setAchievementsOpen}
+        unlockedIds={unlockedAchievementIds}
+      />
+      <LevelUpModal
+        open={levelUpOpen}
+        onOpenChange={setLevelUpOpen}
+        level={level}
+      />
     </div>
   )
 }

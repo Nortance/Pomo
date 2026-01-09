@@ -29,6 +29,7 @@ const defaultSettings: Settings = {
   autoStartBreaks: false,
   autoStartPomodoros: false,
   longBreakInterval: 4,
+  soundEnabled: true,
 }
 
 const defaultGoals: Goals = {
@@ -41,6 +42,7 @@ export const defaultState: PersistedState = {
   tasks: [],
   settings: defaultSettings,
   goals: defaultGoals,
+  achievements: [],
   version: CURRENT_VERSION,
 }
 
@@ -81,6 +83,7 @@ function migrateFromLegacy(): PersistedState | null {
       tasks: [], // Tasks weren't persisted in old format
       settings: defaultSettings,
       goals,
+      achievements: [],
       version: CURRENT_VERSION,
     }
   } catch {
@@ -128,6 +131,7 @@ export function loadState(): PersistedState {
         tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [],
         settings: { ...defaultSettings, ...parsed.settings },
         goals: { ...defaultGoals, ...parsed.goals },
+        achievements: Array.isArray(parsed.achievements) ? parsed.achievements : [],
         version: parsed.version ?? CURRENT_VERSION,
       }
     } catch {

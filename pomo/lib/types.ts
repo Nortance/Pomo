@@ -47,6 +47,7 @@ export interface Settings {
   autoStartBreaks: boolean
   autoStartPomodoros: boolean
   longBreakInterval: number
+  soundEnabled: boolean
 }
 
 // === GOALS TYPES ===
@@ -56,6 +57,13 @@ export interface Goals {
   weeklyPomodoros: number | null
 }
 
+// === ACHIEVEMENTS TYPES ===
+
+export interface UnlockedAchievement {
+  id: string
+  unlockedAt: string // ISO date string
+}
+
 // === APP STATE TYPES ===
 
 export interface PersistedState {
@@ -63,6 +71,7 @@ export interface PersistedState {
   tasks: Task[]
   settings: Settings
   goals: Goals
+  achievements: UnlockedAchievement[]
   version: number // For future migrations
 }
 

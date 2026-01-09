@@ -121,6 +121,13 @@ export function SettingsDialog({
                 onCheckedChange={(checked) => onSettingsChange({ autoStartPomodoros: checked })}
               />
             </div>
+            <div className="flex items-center justify-between">
+              <Label className="text-sm">Sound Effects</Label>
+              <Switch
+                checked={settings.soundEnabled}
+                onCheckedChange={(checked) => onSettingsChange({ soundEnabled: checked })}
+              />
+            </div>
           </div>
 
           {/* Rest Interval */}
