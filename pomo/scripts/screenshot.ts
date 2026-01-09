@@ -3,10 +3,11 @@
  * Takes viewport-sized segments of the page (not full-page screenshots)
  *
  * Usage:
- *   npx tsx scripts/screenshot.ts                    # Desktop segments
+ *   npx tsx scripts/screenshot.ts                    # Desktop segments (dark theme)
  *   npx tsx scripts/screenshot.ts --mobile           # Mobile segments
  *   npx tsx scripts/screenshot.ts --no-clean         # Keep old screenshots
  *   npx tsx scripts/screenshot.ts --single           # Single viewport only
+ *   npx tsx scripts/screenshot.ts --theme=cute       # Custom theme (light, dark, cute)
  */
 
 import { chromium, type Page } from '@playwright/test'
@@ -106,10 +107,19 @@ async function main() {
   const noClean = args.includes('--no-clean')
   const singleOnly = args.includes('--single')
 
+  // Parse theme (default: dark)
+  const themeArg = args.find(a => a.startsWith('--theme='))
+  const theme = themeArg ? themeArg.split('=')[1] : 'dark'
+  const validThemes = ['light', 'dark', 'cute']
+  if (!validThemes.includes(theme)) {
+    console.error(`❌ Invalid theme: ${theme}. Valid options: ${validThemes.join(', ')}`)
+    process.exit(1)
+  }
+
   // Determine viewport
   const viewportKey = isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'
   const viewport = viewports[viewportKey]
-  const prefix = viewportKey
+  const prefix = `${viewportKey}-${theme}`
 
   // Ensure screenshots directory exists
   if (!existsSync(SCREENSHOTS_DIR)) {
@@ -121,15 +131,23 @@ async function main() {
     cleanScreenshots()
   }
 
+  // Determine color scheme for browser (cute uses light as base)
+  const colorScheme = theme === 'dark' ? 'dark' : 'light'
+
   const browser = await chromium.launch()
   const context = await browser.newContext({
     viewport,
-    colorScheme: 'dark',
+    colorScheme,
   })
   const page = await context.newPage()
 
+  // Set theme in localStorage before navigating (for next-themes)
+  await context.addInitScript((themeName) => {
+    window.localStorage.setItem('theme', themeName)
+  }, theme)
+
   try {
-    console.log(`\n📸 Capturing ${viewportKey} screenshots of ${BASE_URL}...\n`)
+    console.log(`\n📸 Capturing ${viewportKey} (${theme} theme) screenshots of ${BASE_URL}...\n`)
 
     await page.goto(BASE_URL, { waitUntil: 'networkidle' })
     await page.waitForTimeout(500) // Let hydration complete

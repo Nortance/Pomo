@@ -9,6 +9,7 @@ import { ReportDialog } from "@/components/report-dialog"
 import { ShortcutsDialog } from "@/components/shortcuts-dialog"
 import { AddTaskDialog } from "@/components/add-task-dialog"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { AmbientSounds } from "@/components/ambient-sounds"
 import { StatsCard } from "@/components/stats-card"
 import { StreakHeatmap } from "@/components/streak-heatmap"
 import { GoalProgress } from "@/components/goal-progress"
@@ -328,6 +329,7 @@ export default function PomodoroTimer() {
               </Button>
             </Link>
             <ThemeToggle />
+            <AmbientSounds />
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShortcutsOpen(true)} aria-label="Keyboard shortcuts">
               <Keyboard className="h-4 w-4" />
             </Button>
@@ -496,6 +498,19 @@ export default function PomodoroTimer() {
           </div>
         </Link>
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-border mt-12 sm:mt-16">
+        <div className="max-w-xl mx-auto px-4 py-6 sm:py-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
+            <p>© {new Date().getFullYear()} CodeFocus</p>
+            <div className="flex items-center gap-4">
+              <Link href="/premium" className="hover:text-foreground transition-colors">Premium</Link>
+              <a href="mailto:hello@codefocus.io" className="hover:text-foreground transition-colors">Contact</a>
+            </div>
+          </div>
+        </div>
+      </footer>
 
       {/* Dialogs */}
       <SettingsDialog

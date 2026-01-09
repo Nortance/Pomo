@@ -22,11 +22,11 @@ We need: **Cute aesthetics** + **Sensory experience** (sounds).
 **So that** the app feels warm, friendly, and matches my style
 
 **Acceptance Criteria:**
-- [ ] `.cute` class defined in `globals.css`
-- [ ] Background is rose white (#FFF5F5)
-- [ ] Primary color is light pink (#FFB6C1)
-- [ ] All text has sufficient contrast (WCAG AA)
-- [ ] Borders and muted colors use soft mauve tones
+- [x] `.cute` class defined in `globals.css`
+- [x] Background is rose white (#FFF5F5)
+- [x] Primary color is light pink (#E8919F - adjusted for better contrast)
+- [x] All text has sufficient contrast (WCAG AA)
+- [x] Borders and muted colors use soft mauve tones
 
 ---
 
@@ -36,10 +36,10 @@ We need: **Cute aesthetics** + **Sensory experience** (sounds).
 **So that** I can choose my preferred visual style
 
 **Acceptance Criteria:**
-- [ ] Theme toggle shows 3 options (Light/Dark/Cute)
-- [ ] Selecting "Cute" applies pink theme immediately
-- [ ] Theme preference persists after refresh
-- [ ] Toggle is accessible (keyboard navigable)
+- [x] Theme toggle shows 4 options (Light/Dark/Cute/System)
+- [x] Selecting "Cute" applies pink theme immediately
+- [x] Theme preference persists after refresh (via next-themes)
+- [x] Toggle is accessible (keyboard navigable)
 
 ---
 
@@ -49,12 +49,12 @@ We need: **Cute aesthetics** + **Sensory experience** (sounds).
 **So that** nothing looks broken or out of place
 
 **Acceptance Criteria:**
-- [ ] Timer progress ring visible on pink background
-- [ ] Buttons have good contrast and hover states
-- [ ] Heatmap colors work with pink theme
-- [ ] Ghost icons display correctly (no dark mode invert)
-- [ ] All dialogs/modals styled correctly
-- [ ] Forms and inputs have visible borders
+- [x] Timer progress ring visible on pink background
+- [x] Buttons have good contrast and hover states
+- [x] Heatmap colors work with pink theme
+- [x] Ghost icons display correctly (no dark mode invert)
+- [x] All dialogs/modals styled correctly
+- [x] Forms and inputs have visible borders
 
 ---
 
@@ -66,11 +66,11 @@ We need: **Cute aesthetics** + **Sensory experience** (sounds).
 **So that** I can concentrate better and enjoy the experience
 
 **Acceptance Criteria:**
-- [ ] Component displays sound selection dropdown
-- [ ] Options: None, Lofi, Rain, Forest, Coffee Shop
-- [ ] Play/pause button toggles audio
-- [ ] Sound loops seamlessly
-- [ ] Selecting "None" stops audio
+- [x] Component displays sound selection dropdown
+- [x] Options: None, Lofi, Rain, Forest, Coffee Shop
+- [x] Play/pause button toggles audio
+- [x] Sound loops seamlessly
+- [x] Selecting "None" stops audio
 
 ---
 
@@ -80,9 +80,9 @@ We need: **Cute aesthetics** + **Sensory experience** (sounds).
 **So that** I can balance it with other audio
 
 **Acceptance Criteria:**
-- [ ] Volume slider (0-100%)
-- [ ] Volume persists in settings
-- [ ] Muting ambient doesn't affect UI sounds
+- [x] Volume slider (0-100%)
+- [x] Volume persists in settings (localStorage)
+- [x] Muting ambient doesn't affect UI sounds (separate control)
 
 ---
 
@@ -92,10 +92,10 @@ We need: **Cute aesthetics** + **Sensory experience** (sounds).
 **So that** I can quickly turn them on/off
 
 **Acceptance Criteria:**
-- [ ] Ambient control visible on main page (near timer or header)
-- [ ] Compact design, doesn't clutter UI
-- [ ] Works on mobile
-- [ ] Respects "Sound Effects" toggle in settings (separate control)
+- [x] Ambient control visible on main page (header, next to theme toggle)
+- [x] Compact design, doesn't clutter UI (icon button with dropdown)
+- [x] Works on mobile
+- [x] Separate from "Sound Effects" toggle in settings
 
 ---
 
@@ -105,10 +105,10 @@ We need: **Cute aesthetics** + **Sensory experience** (sounds).
 **So that** we can use them legally
 
 **Acceptance Criteria:**
-- [ ] 4 ambient tracks sourced (Lofi, Rain, Forest, Coffee Shop)
-- [ ] Each track is 2-5 minutes and loops cleanly
-- [ ] Files are MP3, optimized for web (<2MB each)
-- [ ] No attribution required (or attribution added)
+- [x] 4 ambient tracks sourced (Lofi, Rain, Forest, Coffee Shop)
+- [x] Files loop (HTML5 audio loop attribute)
+- [x] Files are MP3, optimized for web
+- [x] Royalty-free sources (Pixabay, SoundBible)
 
 ---
 

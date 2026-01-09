@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Moon, Sun, Monitor } from "lucide-react"
+import { Moon, Sun, Monitor, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useTheme } from "@/components/theme-provider"
@@ -14,17 +14,18 @@ export function ThemeToggle() {
     setMounted(true)
   }, [])
 
+  const getIcon = () => {
+    if (!mounted) return <Sun className="h-4 w-4" />
+    if (theme === "cute") return <Heart className="h-4 w-4" />
+    if (resolvedTheme === "dark") return <Moon className="h-4 w-4" />
+    return <Sun className="h-4 w-4" />
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="h-8 w-8">
-          {!mounted ? (
-            <Sun className="h-4 w-4" />
-          ) : resolvedTheme === "dark" ? (
-            <Moon className="h-4 w-4" />
-          ) : (
-            <Sun className="h-4 w-4" />
-          )}
+          {getIcon()}
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
@@ -38,6 +39,11 @@ export function ThemeToggle() {
           <Moon className="h-4 w-4" />
           Dark
           {theme === "dark" && <span className="ml-auto text-xs">✓</span>}
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("cute")} className="gap-2">
+          <Heart className="h-4 w-4" />
+          Cute
+          {theme === "cute" && <span className="ml-auto text-xs">✓</span>}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("system")} className="gap-2">
           <Monitor className="h-4 w-4" />
