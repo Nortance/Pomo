@@ -197,15 +197,17 @@ export function generateHeatmapData(dailyStats: DayStats[], todayDate?: Date): H
 
     let level = 0
     let count = 0
+    let minutes = 0
     if (dayStats) {
       count = dayStats.completedPomodoros
+      minutes = dayStats.focusMinutes
       if (count >= 8) level = 4
       else if (count >= 5) level = 3
       else if (count >= 3) level = 2
       else if (count >= 1) level = 1
     }
 
-    data.push({ date: dateStr, count, level })
+    data.push({ date: dateStr, count, minutes, level })
   }
 
   // Return as 2D array for component compatibility

@@ -6,13 +6,13 @@ import { useState, useEffect, useMemo } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 interface StreakHeatmapProps {
-  data: { date: string; count: number; level: number }[][]
+  data: { date: string; count: number; minutes: number; level: number }[][]
 }
 
 export function StreakHeatmap({ data }: StreakHeatmapProps) {
   const { resolvedTheme, theme } = useTheme()
   const [mounted, setMounted] = useState(false)
-  const [hoveredDay, setHoveredDay] = useState<{ date: string; count: number } | null>(null)
+  const [hoveredDay, setHoveredDay] = useState<{ date: string; count: number; minutes: number } | null>(null)
   const [periodOffset, setPeriodOffset] = useState(0) // 0 = current half, -1 = previous, etc.
 
   useEffect(() => {
@@ -62,11 +62,14 @@ export function StreakHeatmap({ data }: StreakHeatmapProps) {
     .map(item => ({
       date: item.date.replace(/-/g, '/'),
       count: item.count,
+      minutes: item.minutes,
     }))
 
   // Find today's data for default display
   const todayData = flatData.find(d => d.date === todayStr)
-  const displayDay = hoveredDay || (todayData ? { date: todayData.date, count: todayData.count } : { date: todayStr, count: 0 })
+  const displayDay = hoveredDay || (todayData
+    ? { date: todayData.date, count: todayData.count, minutes: todayData.minutes }
+    : { date: todayStr, count: 0, minutes: 0 })
 
   // Color schemes - keys are count thresholds
   // 0 = no activity, 1+ = increasing activity levels
@@ -133,9 +136,12 @@ export function StreakHeatmap({ data }: StreakHeatmapProps) {
         <div className="h-5 mb-3">
           <p className="text-xs sm:text-sm text-muted-foreground">
             <span className="text-foreground font-medium">
-              {displayDay.count} pomodoro{displayDay.count !== 1 ? "s" : ""}
-            </span>{" "}
-            on {formatDisplayDate(displayDay.date)}
+              {displayDay.minutes} min
+            </span>
+            {" · "}
+            {displayDay.count} pomodoro{displayDay.count !== 1 ? "s" : ""}
+            {" on "}
+            {formatDisplayDate(displayDay.date)}
             {displayDay.date === todayStr && !hoveredDay && " (today)"}
           </p>
         </div>
@@ -160,13 +166,19 @@ export function StreakHeatmap({ data }: StreakHeatmapProps) {
             monthLabels={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']}
             panelColors={colors}
             rectRender={({ key, ...props }, data) => {
+              // Find the full data including minutes
+              const dayData = flatData.find(d => d.date === data.date)
               return (
                 <rect
                   key={key}
                   {...props}
                   onMouseEnter={() => {
                     if (data.date) {
-                      setHoveredDay({ date: data.date, count: data.count || 0 })
+                      setHoveredDay({
+                        date: data.date,
+                        count: data.count || 0,
+                        minutes: dayData?.minutes || 0
+                      })
                     }
                   }}
                   onMouseLeave={() => setHoveredDay(null)}
