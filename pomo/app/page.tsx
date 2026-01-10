@@ -1,28 +1,48 @@
 "use client"
 
-import { useEffect, useCallback } from "react"
+import { useEffect, useCallback, useState } from "react"
+import dynamic from "next/dynamic"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Settings, BarChart3, User, Keyboard, Sparkles, SkipForward, Award } from "lucide-react"
 import { TaskList } from "@/components/task-list"
-import { SettingsDialog } from "@/components/settings-dialog"
-import { ReportDialog } from "@/components/report-dialog"
-import { ShortcutsDialog } from "@/components/shortcuts-dialog"
-import { AddTaskDialog } from "@/components/add-task-dialog"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { AmbientSounds } from "@/components/ambient-sounds"
 import { StatsCard } from "@/components/stats-card"
 import { StreakHeatmap } from "@/components/streak-heatmap"
 import { GoalProgress } from "@/components/goal-progress"
-import { AchievementsDialog } from "@/components/achievements-dialog"
-import { LevelUpModal } from "@/components/level-up-modal"
 import { checkNewAchievements } from "@/lib/achievements"
 import { useAppState } from "@/hooks/use-app-state"
 import { useCelebration } from "@/hooks/use-celebration"
 import { useSound } from "@/hooks/use-sound"
 import { useOnboarding } from "@/hooks/use-onboarding"
-import { useState } from "react"
-import Link from "next/link"
 import type { TimerMode } from "@/lib/types"
+
+// Lazy load dialogs - only loaded when user opens them
+const SettingsDialog = dynamic(
+  () => import("@/components/settings-dialog").then((mod) => mod.SettingsDialog),
+  { ssr: false }
+)
+const ReportDialog = dynamic(
+  () => import("@/components/report-dialog").then((mod) => mod.ReportDialog),
+  { ssr: false }
+)
+const ShortcutsDialog = dynamic(
+  () => import("@/components/shortcuts-dialog").then((mod) => mod.ShortcutsDialog),
+  { ssr: false }
+)
+const AddTaskDialog = dynamic(
+  () => import("@/components/add-task-dialog").then((mod) => mod.AddTaskDialog),
+  { ssr: false }
+)
+const AchievementsDialog = dynamic(
+  () => import("@/components/achievements-dialog").then((mod) => mod.AchievementsDialog),
+  { ssr: false }
+)
+const LevelUpModal = dynamic(
+  () => import("@/components/level-up-modal").then((mod) => mod.LevelUpModal),
+  { ssr: false }
+)
 
 export default function PomodoroTimer() {
   // Dialog state (UI only, doesn't need persistence)
@@ -285,6 +305,8 @@ export default function PomodoroTimer() {
             <img
               src="/codefocus_logo_medium_no_bg.webp"
               alt="CodeFocus"
+              width={377}
+              height={415}
               className="h-10 w-auto dark:invert"
             />
             <span className="font-[family-name:var(--font-montserrat)] font-semibold tracking-tight text-lg">
