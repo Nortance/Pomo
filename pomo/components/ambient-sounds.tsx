@@ -27,7 +27,7 @@ const soundLabels: Record<AmbientSound, string> = {
   lofi: "Lofi Beats",
   rain: "Rain",
   forest: "Forest",
-  cafe: "Coffee Shop",
+  cafe: "Coffee Shop (Tvari)",
 }
 
 const soundUrls: Record<Exclude<AmbientSound, "none">, string> = {
@@ -217,6 +217,7 @@ export function AmbientSounds() {
             </div>
           </>
         )}
+
       </DropdownMenuContent>
     </DropdownMenu>
   )

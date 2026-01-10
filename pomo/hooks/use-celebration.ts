@@ -11,7 +11,7 @@ interface CelebrationOptions {
 
 export function useCelebration({ soundEnabled }: CelebrationOptions) {
   const { fireGhostConfetti, fireLevelUpConfetti, fireAchievementConfetti } = useConfetti()
-  const { playCompletion, playLevelUp, playAchievement } = useSound(soundEnabled)
+  const { playCompletion } = useSound(soundEnabled)
 
   const celebratePomodoroComplete = useCallback(
     (xpEarned: number) => {
@@ -29,27 +29,25 @@ export function useCelebration({ soundEnabled }: CelebrationOptions) {
   const celebrateLevelUp = useCallback(
     (newLevel: string, tier: number) => {
       fireLevelUpConfetti()
-      playLevelUp()
       toast.success(`Level Up!`, {
         description: `You reached ${newLevel} (Level ${tier})!`,
         icon: "🎉",
         duration: 5000,
       })
     },
-    [fireLevelUpConfetti, playLevelUp]
+    [fireLevelUpConfetti]
   )
 
   const celebrateAchievement = useCallback(
     (achievementName: string, description: string) => {
       fireAchievementConfetti()
-      playAchievement()
       toast("Achievement Unlocked!", {
         description: `${achievementName}: ${description}`,
         icon: "🏆",
         duration: 4000,
       })
     },
-    [fireAchievementConfetti, playAchievement]
+    [fireAchievementConfetti]
   )
 
   const celebrateStreak = useCallback(
