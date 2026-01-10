@@ -62,6 +62,7 @@ export interface Goals {
 export interface UnlockedAchievement {
   id: string
   unlockedAt: string // ISO date string
+  seenAt?: string    // ISO date string - when user first saw the unlock animation
 }
 
 // === APP STATE TYPES ===
@@ -111,5 +112,6 @@ export interface GoalProgress {
 export interface HeatmapDay {
   date: string
   count: number
+  minutes: number
   level: number
 }

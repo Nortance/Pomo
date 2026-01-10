@@ -198,3 +198,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Achievement unlock animation - uses theme-aware --ring color */
+@keyframes achievement-glow {
+  0%, 100% { box-shadow: 0 0 0 0 var(--ring); }
+  50% { box-shadow: 0 0 12px 4px var(--ring); }
+}
+
+.animate-achievement-glow {
+  animation: achievement-glow 1s ease-in-out 3;
+}

@@ -216,6 +216,17 @@ export function useAppState() {
     })
   }, [])
 
+  const markAchievementsSeen = useCallback((achievementIds: string[]) => {
+    setPersisted((prev) => ({
+      ...prev,
+      achievements: prev.achievements.map((a) =>
+        achievementIds.includes(a.id) && !a.seenAt
+          ? { ...a, seenAt: new Date().toISOString() }
+          : a
+      ),
+    }))
+  }, [])
+
   // === SESSION ACTIONS ===
 
   const setActiveTask = useCallback((taskId: string | null) => {
@@ -363,6 +374,7 @@ export function useAppState() {
 
     // Achievements actions
     unlockAchievement,
+    markAchievementsSeen,
 
     // Timer actions
     setTimerMode,

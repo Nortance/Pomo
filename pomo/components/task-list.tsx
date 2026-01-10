@@ -48,7 +48,7 @@ export function TaskList({ tasks, activeTaskId, onSelectTask, onAddTask, onUpdat
 
       <div className="space-y-2">
         {tasks.length === 0 && (
-          <div className="border border-dashed border-border p-6 sm:p-8 text-center">
+          <div className="border border-dashed border-border bg-card p-6 sm:p-8 text-center">
             <Target className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 sm:mb-3 text-muted-foreground/50" />
             <p className="text-xs sm:text-sm text-muted-foreground mb-1">No tasks yet</p>
             <p className="text-[10px] sm:text-xs text-muted-foreground">Add a task to track your focus sessions</p>
@@ -61,7 +61,7 @@ export function TaskList({ tasks, activeTaskId, onSelectTask, onAddTask, onUpdat
             className={`group border border-border p-3 sm:p-4 cursor-pointer transition-all duration-150 ${
               activeTaskId === task.id
                 ? "bg-muted border-foreground"
-                : "hover:bg-muted/50 hover:border-muted-foreground/30"
+                : "bg-card hover:bg-muted/50 hover:border-muted-foreground/30"
             } ${task.completed ? "opacity-50" : ""}`}
             onClick={() => onSelectTask(task.id === activeTaskId ? null : task.id)}
           >
@@ -114,7 +114,7 @@ export function TaskList({ tasks, activeTaskId, onSelectTask, onAddTask, onUpdat
 
         <button
           onClick={onAddTask}
-          className="w-full border border-dashed border-border p-3 sm:p-4 text-xs sm:text-sm text-muted-foreground hover:text-foreground hover:border-foreground hover:bg-muted/30 transition-all duration-150 flex items-center justify-center gap-2"
+          className="w-full border border-dashed border-border bg-card p-3 sm:p-4 text-xs sm:text-sm text-muted-foreground hover:text-foreground hover:border-foreground hover:bg-muted/30 transition-all duration-150 flex items-center justify-center gap-2"
         >
           <Plus className="h-4 w-4" />
           Add Task

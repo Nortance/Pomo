@@ -2,16 +2,18 @@
 
 import HeatMap from "@uiw/react-heat-map"
 import { useTheme } from "next-themes"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 
 interface StreakHeatmapProps {
   data: { date: string; count: number; level: number }[][]
 }
 
 export function StreakHeatmap({ data }: StreakHeatmapProps) {
-  const { resolvedTheme } = useTheme()
+  const { resolvedTheme, theme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const [hoveredDay, setHoveredDay] = useState<{ date: string; count: number } | null>(null)
+  const [periodOffset, setPeriodOffset] = useState(0) // 0 = current half, -1 = previous, etc.
 
   useEffect(() => {
     setMounted(true)
@@ -19,14 +21,42 @@ export function StreakHeatmap({ data }: StreakHeatmapProps) {
 
   // Get today's date
   const today = new Date()
-  const year = today.getFullYear()
-  const month = String(today.getMonth() + 1).padStart(2, '0')
-  const day = String(today.getDate()).padStart(2, '0')
-  const todayStr = `${year}/${month}/${day}`
+  const currentYear = today.getFullYear()
+  const currentMonth = today.getMonth()
+  const todayStr = `${currentYear}/${String(currentMonth + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}`
+
+  // Calculate the 6-month period to display
+  const { startDate, endDate, periodLabel } = useMemo(() => {
+    // Determine current half: H1 (Jan-Jun) = 0, H2 (Jul-Dec) = 1
+    const currentHalf = currentMonth < 6 ? 0 : 1
+
+    // Calculate target half with offset
+    let targetHalf = currentHalf + periodOffset
+    let targetYear = currentYear
+
+    // Normalize: each year has 2 halves (0 and 1)
+    while (targetHalf < 0) {
+      targetHalf += 2
+      targetYear--
+    }
+    while (targetHalf > 1) {
+      targetHalf -= 2
+      targetYear++
+    }
+
+    // Calculate dates
+    const startMonth = targetHalf === 0 ? 0 : 6 // Jan or Jul
+    const start = new Date(targetYear, startMonth, 1)
+    const end = new Date(targetYear, startMonth + 6, 0) // Last day of the 6th month
+
+    // Period label
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    const label = `${monthNames[startMonth]} - ${monthNames[startMonth + 5]} ${targetYear}`
+
+    return { startDate: start, endDate: end, periodLabel: label }
+  }, [currentYear, currentMonth, periodOffset])
 
   // Flatten and convert data to the format expected by @uiw/react-heat-map
-  // Format: { date: 'YYYY/MM/DD', count: number }
-  // Only include days with actual activity (count > 0) - empty days will show as lightest
   const flatData = data.flat()
     .filter(item => item && item.date && item.count > 0)
     .map(item => ({
@@ -34,15 +64,11 @@ export function StreakHeatmap({ data }: StreakHeatmapProps) {
       count: item.count,
     }))
 
-  // Calculate start date (180 days ago - ~6 months)
-  const startDate = new Date(today)
-  startDate.setDate(today.getDate() - 180)
-
   // Find today's data for default display
   const todayData = flatData.find(d => d.date === todayStr)
   const displayDay = hoveredDay || (todayData ? { date: todayData.date, count: todayData.count } : { date: todayStr, count: 0 })
 
-  // Color scheme - keys are count thresholds
+  // Color schemes - keys are count thresholds
   // 0 = no activity, 1+ = increasing activity levels
   const lightColors: Record<number, string> = {
     0: '#ebedf0',  // no activity (lightest)
@@ -60,8 +86,19 @@ export function StreakHeatmap({ data }: StreakHeatmapProps) {
     8: '#e0e0e0',  // 8+ pomodoros (lightest in dark mode)
   }
 
-  const colors = resolvedTheme === 'dark' ? darkColors : lightColors
-  const textColor = resolvedTheme === 'dark' ? '#a1a1aa' : '#71717a' // zinc-400 / zinc-500
+  // Cute theme - pink gradient
+  const cuteColors: Record<number, string> = {
+    0: '#FFF0F5',  // lavender blush (no activity)
+    1: '#FFD6E0',  // light pink
+    3: '#F8A5B8',  // medium pink
+    5: '#E07090',  // deeper pink
+    8: '#C05068',  // primary pink (most activity)
+  }
+
+  // Select colors based on theme
+  const isCute = theme === 'cute'
+  const colors = isCute ? cuteColors : (resolvedTheme === 'dark' ? darkColors : lightColors)
+  const textColor = isCute ? '#7B6B7B' : (resolvedTheme === 'dark' ? '#a1a1aa' : '#71717a')
 
   if (!mounted) {
     return (
@@ -112,12 +149,12 @@ export function StreakHeatmap({ data }: StreakHeatmapProps) {
           <HeatMap
             value={flatData}
             startDate={startDate}
-            endDate={today}
+            endDate={endDate}
             width="100%"
             rectSize={14}
             space={3}
             rectProps={{
-              rx: 2,
+              rx: 7,  // Half of rectSize (14) for perfect circles
             }}
             weekLabels={['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']}
             monthLabels={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']}
@@ -137,23 +174,48 @@ export function StreakHeatmap({ data }: StreakHeatmapProps) {
                 />
               )
             }}
-            legendRender={({ key, ...props }) => <rect key={key} {...props} rx={2} />}
+            legendRender={({ key, ...props }) => <rect key={key} {...props} rx={7} />}
           />
         </div>
 
-        {/* Legend */}
-        <div className="flex items-center justify-end gap-1.5 mt-3 text-[10px] sm:text-xs text-muted-foreground">
-          <span>Less</span>
-          <div className="flex gap-0.5">
-            {[0, 1, 3, 5, 8].map((threshold) => (
-              <div
-                key={threshold}
-                className="w-3 h-3 rounded-sm"
-                style={{ backgroundColor: colors[threshold] }}
-              />
-            ))}
+        {/* Navigation & Legend */}
+        <div className="flex items-center justify-between mt-3 text-[10px] sm:text-xs text-muted-foreground">
+          {/* Period Navigation */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setPeriodOffset(prev => prev - 1)}
+              className="p-0.5 hover:text-foreground transition-colors"
+              aria-label="Previous period"
+            >
+              <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
+            <span className="min-w-[100px] sm:min-w-[120px] text-center">{periodLabel}</span>
+            <button
+              onClick={() => setPeriodOffset(prev => prev + 1)}
+              disabled={periodOffset >= 0}
+              className={`p-0.5 transition-colors ${
+                periodOffset >= 0 ? 'opacity-30 cursor-not-allowed' : 'hover:text-foreground'
+              }`}
+              aria-label="Next period"
+            >
+              <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
           </div>
-          <span>More</span>
+
+          {/* Legend */}
+          <div className="flex items-center gap-1.5">
+            <span>Less</span>
+            <div className="flex gap-1">
+              {[0, 1, 3, 5, 8].map((threshold) => (
+                <div
+                  key={threshold}
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: colors[threshold] }}
+                />
+              ))}
+            </div>
+            <span>More</span>
+          </div>
         </div>
       </div>
     </div>

@@ -2,20 +2,39 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ACHIEVEMENTS, getUnlockedCount } from "@/lib/achievements"
+import type { UnlockedAchievement } from "@/lib/types"
 import Image from "next/image"
+import { useMemo } from "react"
 
 interface AchievementsDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  unlockedIds: string[]
+  achievements: UnlockedAchievement[]
+  markAchievementsSeen: (ids: string[]) => void
 }
 
 export function AchievementsDialog({
   open,
   onOpenChange,
-  unlockedIds,
+  achievements,
+  markAchievementsSeen,
 }: AchievementsDialogProps) {
+  const unlockedIds = useMemo(() => achievements.map((a) => a.id), [achievements])
   const { unlocked, total } = getUnlockedCount(unlockedIds)
+
+  // Find achievements that are unlocked but not yet seen (should animate)
+  const newAchievementIds = useMemo(
+    () => achievements.filter((a) => !a.seenAt).map((a) => a.id),
+    [achievements]
+  )
+
+  // Handle dialog close - mark new achievements as seen
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen && newAchievementIds.length > 0) {
+      markAchievementsSeen(newAchievementIds)
+    }
+    onOpenChange(newOpen)
+  }
 
   // Group achievements by category
   const categories = [
@@ -26,7 +45,7 @@ export function AchievementsDialog({
   ]
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-sm font-medium tracking-wide flex items-center justify-between">
@@ -46,6 +65,7 @@ export function AchievementsDialog({
               <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
                 {category.achievements.map((achievement) => {
                   const isUnlocked = unlockedIds.includes(achievement.id)
+                  const isNew = newAchievementIds.includes(achievement.id)
                   return (
                     <div
                       key={achievement.id}
@@ -56,19 +76,21 @@ export function AchievementsDialog({
                         className={`relative w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center border transition-all ${
                           isUnlocked
                             ? "border-foreground bg-muted/50"
-                            : "border-border bg-muted/20 opacity-40 grayscale"
-                        }`}
+                            : "border-border bg-muted/20"
+                        } ${isNew ? "animate-achievement-glow" : ""}`}
                       >
                         <Image
                           src={achievement.icon}
                           alt={achievement.name}
                           width={40}
                           height={40}
-                          className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+                          className={`w-8 h-8 sm:w-10 sm:h-10 object-contain transition-all ${
+                            !isUnlocked ? "blur-[6px] opacity-50" : ""
+                          }`}
                         />
                         {!isUnlocked && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-background/50">
-                            <span className="text-lg">?</span>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-lg font-medium text-muted-foreground">?</span>
                           </div>
                         )}
                       </div>

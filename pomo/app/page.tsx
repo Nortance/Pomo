@@ -63,7 +63,9 @@ export default function PomodoroTimer() {
 
     // Achievements actions
     unlockAchievement,
+    markAchievementsSeen,
     unlockedAchievementIds,
+    achievements,
 
     // Timer actions
     setTimerMode,
@@ -534,7 +536,8 @@ export default function PomodoroTimer() {
       <AchievementsDialog
         open={achievementsOpen}
         onOpenChange={setAchievementsOpen}
-        unlockedIds={unlockedAchievementIds}
+        achievements={achievements}
+        markAchievementsSeen={markAchievementsSeen}
       />
       <LevelUpModal
         open={levelUpOpen}

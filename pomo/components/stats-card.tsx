@@ -37,35 +37,46 @@ export function StatsCard({
       <h2 className="text-xs sm:text-sm font-medium tracking-wide mb-3 sm:mb-4">Stats</h2>
       <div className="border border-border bg-card">
       {level && (
-        <div className="border-b border-border px-3 sm:px-4 py-2.5 bg-muted/30">
-          <div className="flex items-center justify-between mb-1.5">
-            <div className="flex items-center gap-2">
+        <div className="border-b border-border px-4 sm:px-5 py-4 sm:py-5 bg-muted/30">
+          <div className="flex items-center gap-4">
+            {/* Ghost Icon - Prominent focal point */}
+            <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-background/50 border border-border flex items-center justify-center">
               <Image
                 src={levelIcons[level.name] || levelIcons.Apprentice}
                 alt={level.name}
-                width={20}
-                height={20}
-                className="w-5 h-5 object-contain"
+                width={40}
+                height={40}
+                className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
               />
-              <span className="text-xs font-medium tracking-wide">{level.name}</span>
-              <span className="text-[10px] text-muted-foreground">Level {level.tier}</span>
             </div>
-            {level.nextTier && (
-              <span className="text-[10px] text-muted-foreground">
-                {Math.round(level.progress)}% to next
-              </span>
-            )}
+
+            {/* Level Info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-sm sm:text-base font-medium tracking-wide">{level.name}</span>
+                <span className="text-xs text-muted-foreground">Level {level.tier}</span>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
+                  {level.nextTier ? (
+                    <div
+                      className="h-full bg-foreground rounded-full transition-all duration-500 ease-out"
+                      style={{ width: `${Math.min(100, level.progress)}%` }}
+                    />
+                  ) : (
+                    <div className="h-full bg-foreground rounded-full" />
+                  )}
+                </div>
+                {level.nextTier && (
+                  <span className="text-[10px] sm:text-xs text-muted-foreground tabular-nums">
+                    {Math.round(level.progress)}%
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
-          {level.nextTier ? (
-            <div className="h-1 bg-border overflow-hidden">
-              <div
-                className="h-full bg-foreground transition-all duration-500 ease-out"
-                style={{ width: `${Math.min(100, level.progress)}%` }}
-              />
-            </div>
-          ) : (
-            <div className="h-1 bg-foreground" />
-          )}
         </div>
       )}
 
@@ -79,7 +90,7 @@ export function StatsCard({
             <p className="text-lg sm:text-2xl font-light tabular-nums">
               {totalXP.toLocaleString()}
             </p>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wide">XP (min)</p>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wide">XP (Minutes)</p>
           </div>
 
           {/* Current Streak */}
