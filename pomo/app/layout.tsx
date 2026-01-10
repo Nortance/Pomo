@@ -15,10 +15,10 @@ const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-montserrat
 export const metadata: Metadata = {
   // Basic Meta
   title: {
-    default: "Free Pomodoro Timer Online — Simple & Fast",
+    default: "Pomodoro Timer - For Girls",
     template: "%s | CodeFocus",
   },
-  description: "Free online pomodoro timer. Track focus sessions, build streaks. No signup, no download. Works on desktop & mobile. Dark mode & keyboard shortcuts included.",
+  description: "Codefocus is a cute pomodoro timer that works on desktop & mobile. Stay focused and productive with a kawaii aesthetic.",
   keywords: [
     "pomodoro timer",
     "pomodoro timer for developers",
@@ -71,14 +71,14 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://codefocus.io",
     siteName: "CodeFocus",
-    title: "Free Pomodoro Timer Online — Simple & Fast",
-    description: "Free online pomodoro timer. Track focus sessions, build streaks. No signup, no download. Works on desktop & mobile.",
+    title: "Pomodoro Timer - For Girls",
+    description: "Codefocus is a cute pomodoro timer that works on desktop & mobile. Stay focused and productive with a kawaii aesthetic.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Free Pomodoro Timer Online",
+        alt: "Cute Pomodoro Timer for Girls",
         type: "image/png",
       },
     ],
@@ -87,8 +87,8 @@ export const metadata: Metadata = {
   // Twitter
   twitter: {
     card: "summary_large_image",
-    title: "Free Pomodoro Timer Online — Simple & Fast",
-    description: "Free online pomodoro timer. Track focus sessions, build streaks. No signup, no download. Works on desktop & mobile.",
+    title: "Pomodoro Timer - For Girls",
+    description: "Codefocus is a cute pomodoro timer that works on desktop & mobile. Stay focused and productive with a kawaii aesthetic.",
     images: ["/og-image.png"],
     creator: "@codefocus",
     site: "@codefocus",
@@ -146,8 +146,8 @@ const jsonLd = {
     {
       "@type": "WebApplication",
       "@id": "https://codefocus.io/#app",
-      name: "Free Pomodoro Timer Online",
-      description: "Free online pomodoro timer. Track focus sessions, build streaks. No signup, no download. Works on desktop & mobile.",
+      name: "Pomodoro Timer - For Girls",
+      description: "Codefocus is a cute pomodoro timer that works on desktop & mobile. Stay focused and productive with a kawaii aesthetic.",
       url: "https://codefocus.io",
       applicationCategory: "ProductivityApplication",
       operatingSystem: "Any",
@@ -184,8 +184,8 @@ const jsonLd = {
       "@type": "WebSite",
       "@id": "https://codefocus.io/#website",
       url: "https://codefocus.io",
-      name: "Free Pomodoro Timer Online",
-      description: "Free online pomodoro timer with streak tracking and focus sessions.",
+      name: "Pomodoro Timer - For Girls",
+      description: "Codefocus is a cute pomodoro timer that works on desktop & mobile. Stay focused and productive with a kawaii aesthetic.",
       publisher: {
         "@id": "https://codefocus.io/#organization",
       },
