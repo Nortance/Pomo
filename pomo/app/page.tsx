@@ -19,6 +19,7 @@ import { checkNewAchievements } from "@/lib/achievements"
 import { useAppState } from "@/hooks/use-app-state"
 import { useCelebration } from "@/hooks/use-celebration"
 import { useSound } from "@/hooks/use-sound"
+import { useOnboarding } from "@/hooks/use-onboarding"
 import { useState } from "react"
 import Link from "next/link"
 import type { TimerMode } from "@/lib/types"
@@ -88,6 +89,9 @@ export default function PomodoroTimer() {
 
   // Sound hook for UI interactions
   const { playClick } = useSound(settings.soundEnabled)
+
+  // Onboarding tour for first-time users
+  const { startSettingsTour } = useOnboarding()
 
   // Track previous stats to detect new achievements and level-ups
   const [prevTotalPomodoros, setPrevTotalPomodoros] = useState(0)
@@ -312,6 +316,7 @@ export default function PomodoroTimer() {
               </kbd>
             </Button>
             <Button
+              id="settings-button"
               variant="ghost"
               size="sm"
               onClick={() => setSettingsOpen(true)}
@@ -408,6 +413,7 @@ export default function PomodoroTimer() {
 
           <div className="flex justify-center items-center gap-3">
             <Button
+              id="start-button"
               size="lg"
               className={`h-11 px-8 sm:px-12 text-sm font-medium tracking-wide transition-all duration-200 flex items-center justify-center ${
                 timer.isRunning
@@ -522,6 +528,7 @@ export default function PomodoroTimer() {
         goals={goals}
         onSettingsChange={updateSettings}
         onGoalsChange={setGoals}
+        onOpen={startSettingsTour}
       />
       <ReportDialog
         open={reportOpen}

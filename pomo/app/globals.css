@@ -208,3 +208,23 @@
 .animate-achievement-glow {
   animation: achievement-glow 1s ease-in-out 3;
 }
+
+/* Driver.js onboarding styles */
+.driver-popover-description {
+  font-size: 1.125rem !important;
+  line-height: 1.5 !important;
+}
+
+.driver-popover-footer {
+  display: flex !important;
+  justify-content: space-between !important;
+}
+
+.driver-popover-prev-btn {
+  order: -1 !important;
+  margin-right: auto !important;
+}
+
+.first-step .driver-popover-prev-btn {
+  display: none !important;
+}

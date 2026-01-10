@@ -15,6 +15,7 @@ interface SettingsDialogProps {
   goals: Goals
   onSettingsChange: (settings: Partial<Settings>) => void
   onGoalsChange: (goals: Partial<Goals>) => void
+  onOpen?: () => void
 }
 
 export function SettingsDialog({
@@ -24,6 +25,7 @@ export function SettingsDialog({
   goals,
   onSettingsChange,
   onGoalsChange,
+  onOpen,
 }: SettingsDialogProps) {
   // Local state for inputs to allow intermediate editing (empty values while typing)
   const [pomodoro, setPomodoro] = useState(String(settings.pomodoro))
@@ -38,6 +40,13 @@ export function SettingsDialog({
     setLongBreak(String(settings.longBreak))
     setLongBreakInterval(String(settings.longBreakInterval))
   }, [settings.pomodoro, settings.shortBreak, settings.longBreak, settings.longBreakInterval])
+
+  // Trigger onOpen callback when dialog opens
+  useEffect(() => {
+    if (open && onOpen) {
+      onOpen()
+    }
+  }, [open, onOpen])
 
   const handleBlur = (field: keyof Settings, value: string, fallback: number) => {
     const val = Number.parseInt(value)
@@ -69,6 +78,7 @@ export function SettingsDialog({
               <div className="space-y-2">
                 <Label className="text-xs">Focus</Label>
                 <Input
+                  id="focus-duration-input"
                   type="number"
                   min={1}
                   max={240}
