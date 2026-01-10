@@ -1,6 +1,12 @@
 import { Button } from "@/components/ui/button"
 import { Timer, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Sign In",
+  description: "Sign in to your CodeFocus account to sync your cute pomodoro timer data across devices.",
+}
 
 export default function SignInPage() {
   return (

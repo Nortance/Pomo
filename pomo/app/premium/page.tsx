@@ -1,6 +1,12 @@
 import { Button } from "@/components/ui/button"
 import { Timer, ArrowLeft, Check, Sparkles } from "lucide-react"
 import Link from "next/link"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Premium",
+  description: "Unlock premium features for your cute pomodoro timer. Advanced analytics, unlimited projects, and more.",
+}
 
 const features = [
   "Unlimited projects",
