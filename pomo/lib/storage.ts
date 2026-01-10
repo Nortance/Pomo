@@ -3,10 +3,22 @@
  * Handles localStorage persistence with migration support
  */
 
-import type { PersistedState, Stats, Settings, Goals, Task } from './types'
+import type { PersistedState, Stats, Settings, Goals, Task, TimerMode } from './types'
 
 const STORAGE_KEY = 'codefocus-app'
+const TIMER_SESSION_KEY = 'codefocus-timer-session'
 const CURRENT_VERSION = 1
+
+// Timer session state for persistence across refreshes
+export interface TimerSessionState {
+  mode: TimerMode
+  timeLeft: number
+  startDuration: number
+  isRunning: boolean
+  savedAt: number // Unix timestamp in ms
+  sessionPomodoros: number
+  activeTaskId: string | null
+}
 
 // Default values
 const defaultStats: Stats = {
@@ -174,4 +186,46 @@ export function clearState(): void {
  */
 export function getToday(): string {
   return new Date().toISOString().split('T')[0]
+}
+
+/**
+ * Save timer session state to localStorage
+ */
+export function saveTimerSession(state: TimerSessionState): void {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(TIMER_SESSION_KEY, JSON.stringify(state))
+}
+
+/**
+ * Load timer session state from localStorage
+ * Returns null if no saved state or if state is stale (> 24 hours old)
+ */
+export function loadTimerSession(): TimerSessionState | null {
+  if (typeof window === 'undefined') return null
+
+  const stored = localStorage.getItem(TIMER_SESSION_KEY)
+  if (!stored) return null
+
+  try {
+    const parsed = JSON.parse(stored) as TimerSessionState
+
+    // Discard if saved more than 24 hours ago (stale session)
+    const maxAge = 24 * 60 * 60 * 1000 // 24 hours in ms
+    if (Date.now() - parsed.savedAt > maxAge) {
+      clearTimerSession()
+      return null
+    }
+
+    return parsed
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Clear saved timer session
+ */
+export function clearTimerSession(): void {
+  if (typeof window === 'undefined') return
+  localStorage.removeItem(TIMER_SESSION_KEY)
 }

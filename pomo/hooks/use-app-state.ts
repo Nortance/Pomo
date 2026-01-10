@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import type { PersistedState, Stats, Settings, Goals, Task, TimerMode, DayStats, UnlockedAchievement } from "@/lib/types"
-import { loadState, saveState, defaultState, getToday } from "@/lib/storage"
+import { loadState, saveState, defaultState, getToday, saveTimerSession, loadTimerSession, clearTimerSession } from "@/lib/storage"
+import type { TimerSessionState } from "@/lib/storage"
 import {
   calculateLevel,
   calculateGoalProgress,
@@ -44,16 +45,52 @@ export function useAppState() {
   useEffect(() => {
     const loaded = loadState()
     setPersisted(loaded)
-    // Initialize timer with loaded settings
-    const initialDuration = loaded.settings.pomodoro * 60
-    setSession((prev) => ({
-      ...prev,
-      timer: {
-        ...prev.timer,
-        timeLeft: initialDuration,
-        startDuration: initialDuration,
-      },
-    }))
+
+    // Try to restore timer session (for page refresh recovery)
+    const savedTimer = loadTimerSession()
+    if (savedTimer) {
+      // Calculate how much time has passed since save
+      const elapsedMs = Date.now() - savedTimer.savedAt
+      const elapsedSeconds = Math.floor(elapsedMs / 1000)
+
+      let newTimeLeft = savedTimer.timeLeft
+      let shouldRun = savedTimer.isRunning
+
+      if (savedTimer.isRunning) {
+        // Adjust time for elapsed duration
+        newTimeLeft = Math.max(0, savedTimer.timeLeft - elapsedSeconds)
+        // If timer would have completed, set to 0 and stop
+        if (newTimeLeft === 0) {
+          shouldRun = false
+        }
+      }
+
+      setSession({
+        timer: {
+          mode: savedTimer.mode,
+          timeLeft: newTimeLeft,
+          startDuration: savedTimer.startDuration,
+          isRunning: shouldRun,
+        },
+        sessionPomodoros: savedTimer.sessionPomodoros,
+        activeTaskId: savedTimer.activeTaskId,
+      })
+
+      // Clear saved session after restoring
+      clearTimerSession()
+    } else {
+      // No saved session, initialize with settings
+      const initialDuration = loaded.settings.pomodoro * 60
+      setSession((prev) => ({
+        ...prev,
+        timer: {
+          ...prev.timer,
+          timeLeft: initialDuration,
+          startDuration: initialDuration,
+        },
+      }))
+    }
+
     setIsLoaded(true)
   }, [])
 
@@ -63,6 +100,47 @@ export function useAppState() {
       saveState(persisted)
     }
   }, [persisted, isLoaded])
+
+  // Save timer session on page unload (refresh/close) and periodically while running
+  useEffect(() => {
+    if (!isLoaded) return
+
+    const saveCurrentSession = () => {
+      // Only save if timer has been modified from default (user has interacted)
+      const hasProgress = session.timer.timeLeft !== session.timer.startDuration ||
+                          session.timer.isRunning ||
+                          session.sessionPomodoros > 0
+
+      if (hasProgress) {
+        saveTimerSession({
+          mode: session.timer.mode,
+          timeLeft: session.timer.timeLeft,
+          startDuration: session.timer.startDuration,
+          isRunning: session.timer.isRunning,
+          savedAt: Date.now(),
+          sessionPomodoros: session.sessionPomodoros,
+          activeTaskId: session.activeTaskId,
+        })
+      }
+    }
+
+    // Save on page unload
+    const handleBeforeUnload = () => {
+      saveCurrentSession()
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+
+    // Periodic backup save every 10 seconds while timer is running
+    let intervalId: NodeJS.Timeout | null = null
+    if (session.timer.isRunning) {
+      intervalId = setInterval(saveCurrentSession, 10000)
+    }
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      if (intervalId) clearInterval(intervalId)
+    }
+  }, [isLoaded, session])
 
   // Sync timer with settings when settings change (only if timer is at full duration / not started)
   useEffect(() => {
