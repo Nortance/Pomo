@@ -432,6 +432,10 @@ export function useAppState() {
     activeTaskId: session.activeTaskId,
     isLoaded,
 
+    // Raw persisted state for sync
+    _persisted: persisted,
+    _setPersisted: setPersisted,
+
     // Stats actions
     recordPomodoro,
     recordSkip,

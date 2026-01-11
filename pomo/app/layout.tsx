@@ -1,5 +1,6 @@
 import type React from "react"
 import type { Metadata } from "next"
+import { ClerkProvider } from "@clerk/nextjs"
 
 import "./globals.css"
 
@@ -232,10 +233,12 @@ export default function RootLayout({
         />
       </head>
       <body className={`font-sans antialiased ${montserrat.variable}`}>
-        <ThemeProvider>
-          {children}
-          <Toaster />
-        </ThemeProvider>
+        <ClerkProvider>
+          <ThemeProvider>
+            {children}
+            <Toaster />
+          </ThemeProvider>
+        </ClerkProvider>
       </body>
     </html>
   )

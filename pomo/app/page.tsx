@@ -4,18 +4,20 @@ import { useEffect, useCallback, useState } from "react"
 import dynamic from "next/dynamic"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Settings, BarChart3, User, Keyboard, Sparkles, SkipForward, Award } from "lucide-react"
+import { Settings, BarChart3, Keyboard, Sparkles, SkipForward, Award } from "lucide-react"
 import { TaskList } from "@/components/task-list"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { AmbientSounds } from "@/components/ambient-sounds"
 import { StatsCard } from "@/components/stats-card"
 import { StreakHeatmap } from "@/components/streak-heatmap"
 import { GoalProgress } from "@/components/goal-progress"
+import { AuthButton } from "@/components/auth-button"
 import { checkNewAchievements } from "@/lib/achievements"
 import { useAppState } from "@/hooks/use-app-state"
 import { useCelebration } from "@/hooks/use-celebration"
 import { useSound } from "@/hooks/use-sound"
 import { useOnboarding } from "@/hooks/use-onboarding"
+import { useSync } from "@/hooks/use-sync"
 import type { TimerMode } from "@/lib/types"
 
 // Lazy load dialogs - only loaded when user opens them
@@ -65,6 +67,10 @@ export default function PomodoroTimer() {
     activeTaskId,
     isLoaded,
 
+    // Raw persisted state for sync
+    _persisted,
+    _setPersisted,
+
     // Stats actions
     recordPomodoro,
     recordSkip,
@@ -101,6 +107,9 @@ export default function PomodoroTimer() {
     heatmapData,
     activeTask,
   } = useAppState()
+
+  // Sync state with Clerk (when signed in)
+  const { syncStatus } = useSync(_persisted, _setPersisted)
 
   // Celebration hook for pomodoro completion
   const { celebratePomodoroComplete, celebrateDailyGoal, celebrateAchievement, celebrateLevelUp } = useCelebration({
@@ -351,12 +360,7 @@ export default function PomodoroTimer() {
                 S
               </kbd>
             </Button>
-            <Link href="/signin" aria-label="Sign In">
-              <Button variant="ghost" size="sm" className="text-xs gap-1.5 h-8 px-2.5 sm:px-3">
-                <User className="h-4 w-4" />
-                <span className="hidden sm:inline">Sign In</span>
-              </Button>
-            </Link>
+            <AuthButton syncStatus={syncStatus} />
             <ThemeToggle />
             <AmbientSounds />
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShortcutsOpen(true)} aria-label="Keyboard shortcuts">
