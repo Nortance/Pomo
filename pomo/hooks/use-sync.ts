@@ -72,10 +72,11 @@ export function useSync(
         })
 
         // Update local state with merged data
+        // Use localTasks (all tasks) not data.tasks (filtered for Clerk)
         setPersisted(prev => ({
           ...prev,
           stats: mergeResult.data.stats,
-          tasks: mergeResult.data.tasks,
+          tasks: mergeResult.localTasks,
           settings: mergeResult.data.settings,
           goals: mergeResult.data.goals,
           achievements: mergeResult.data.achievements,

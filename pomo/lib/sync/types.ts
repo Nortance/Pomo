@@ -38,7 +38,8 @@ export interface SyncMetadata {
  * Result of a merge operation
  */
 export interface MergeResult {
-  data: ClerkUserData
+  data: ClerkUserData // Filtered data for Clerk storage
+  localTasks: Task[] // All tasks (unfiltered) for local storage
   hasChanges: boolean
   conflicts: string[] // Description of any conflicts that were resolved
 }

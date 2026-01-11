@@ -318,6 +318,7 @@ export function mergeData(
         achievements: localAchievements,
         lastSyncedAt: new Date().toISOString(),
       },
+      localTasks: localTasks, // Keep all local tasks
       hasChanges: true,
       conflicts: ['First sync - uploaded local data to cloud'],
     }
@@ -346,6 +347,7 @@ export function mergeData(
       achievements: mergedAchievements,
       lastSyncedAt: new Date().toISOString(),
     },
+    localTasks: mergedTasks, // All tasks for local storage
     hasChanges,
     conflicts,
   }
