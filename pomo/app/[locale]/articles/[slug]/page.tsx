@@ -7,6 +7,8 @@ import { getArticleBySlug, getArticleSlugs } from '@/lib/articles';
 import { getTranslations } from '@/lib/translations';
 import { ArticleImage } from '@/components/article-image';
 import { ArticlesNavbar } from '@/components/articles-navbar';
+import { TrackPageView } from '@/components/track-page-view';
+import { MixpanelEvents } from '@/lib/mixpanel-events';
 import { Clock, Calendar, User } from 'lucide-react';
 
 type Props = {
@@ -95,6 +97,15 @@ export default async function ArticlePage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-background">
+      <TrackPageView
+        event={MixpanelEvents.ARTICLE_VIEWED}
+        properties={{
+          slug,
+          title: frontmatter.title,
+          author: frontmatter.author,
+          locale,
+        }}
+      />
       {/* Header */}
       <ArticlesNavbar
         locale={locale}

@@ -48,6 +48,13 @@ export const MixpanelEvents = {
 
   /** User changed language/locale */
   LANGUAGE_CHANGED: 'Language Changed',
+
+  // ============================================
+  // CONTENT EVENTS
+  // ============================================
+
+  /** User viewed an article */
+  ARTICLE_VIEWED: 'Article Viewed',
 } as const
 
 export type MixpanelEvent = typeof MixpanelEvents[keyof typeof MixpanelEvents]
