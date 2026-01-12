@@ -1,0 +1,16 @@
+# SEO Articles Directory
+
+Place your article drafts here for AI detection checking.
+
+## Workflow
+
+1. Write draft: `articles/pomodoro-guide-v1.md`
+2. Check: `npm run ai-check -- --file articles/pomodoro-guide-v1.md`
+3. Revise based on feedback
+4. Repeat 3 times until score > 80%
+
+## File Naming Convention
+
+- `{topic}-v1.md` - First draft
+- `{topic}-v2.md` - After first revision
+- `{topic}-v3.md` - Final version
