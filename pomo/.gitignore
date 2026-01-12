@@ -42,3 +42,8 @@ next-env.d.ts
 
 # screenshots (dev only)
 /screenshots
+
+# python venv
+.venv/
+__pycache__/
+*.pyc

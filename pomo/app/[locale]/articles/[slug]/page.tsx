@@ -6,7 +6,8 @@ import remarkGfm from 'remark-gfm';
 import { getArticleBySlug, getArticleSlugs } from '@/lib/articles';
 import { getTranslations } from '@/lib/translations';
 import { ArticleImage } from '@/components/article-image';
-import { ArrowLeft, Clock, Calendar, User } from 'lucide-react';
+import { ArticlesNavbar } from '@/components/articles-navbar';
+import { Clock, Calendar, User } from 'lucide-react';
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
@@ -95,17 +96,11 @@ export default async function ArticlePage({ params }: Props) {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border">
-        <div className="max-w-3xl mx-auto px-4 py-4">
-          <Link
-            href={`/${locale}/articles`}
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Articles
-          </Link>
-        </div>
-      </header>
+      <ArticlesNavbar
+        locale={locale}
+        backHref={`/${locale}/articles`}
+        backLabel="Back to Articles"
+      />
 
       {/* Article */}
       <article className="max-w-3xl mx-auto px-4 py-12">
@@ -163,7 +158,7 @@ export default async function ArticlePage({ params }: Props) {
             </span>
             <span className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              {new Date(frontmatter.date).toLocaleDateString('en-US', {
+              {new Date(frontmatter.date).toLocaleDateString(locale, {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',

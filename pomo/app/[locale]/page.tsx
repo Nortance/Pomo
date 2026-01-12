@@ -5,7 +5,7 @@ import dynamic from "next/dynamic"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Settings, BarChart3, User, Keyboard, Sparkles, SkipForward, Award, Menu } from "lucide-react"
+import { Settings, BarChart3, User, Keyboard, Sparkles, SkipForward, Award, Menu, FileText } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -426,6 +426,12 @@ export default function PomodoroTimer() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link href="/articles" className="flex items-center">
+                    <FileText className="h-4 w-4 mr-2" />
+                    {t('nav.articles')}
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setReportOpen(true)}>
                   <BarChart3 className="h-4 w-4 mr-2" />
                   {t('nav.report')}
@@ -456,6 +462,12 @@ export default function PomodoroTimer() {
                 <DropdownMenuItem onClick={() => setReportOpen(true)}>
                   <BarChart3 className="h-4 w-4 mr-2" />
                   {t('nav.report')}
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/articles" className="flex items-center">
+                    <FileText className="h-4 w-4 mr-2" />
+                    {t('nav.articles')}
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>

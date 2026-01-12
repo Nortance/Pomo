@@ -17,7 +17,8 @@
     "ai-check": ".venv/bin/python scripts/ai-detector.py",
     "fetch-image": "tsx scripts/fetch-image.ts",
     "keywords": ".venv/bin/python scripts/keyword-research.py",
-    "webp": "tsx scripts/convert-to-webp.ts"
+    "webp": "tsx scripts/convert-to-webp.ts",
+    "generate-image": "tsx scripts/generate-image.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

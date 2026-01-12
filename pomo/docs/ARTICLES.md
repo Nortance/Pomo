@@ -195,9 +195,9 @@ Before publishing, verify:
 
 ## Article Writing Tips
 
-### Follow the SEO Guide
+### Follow the SEO Plan
 
-See `docs/SEO-ARTICLE-GUIDE.md` for writing tips to pass AI detection.
+See `docs/SEO-PLAN.md` for the complete writing process and humanization rules.
 
 ### Key Points
 
@@ -237,7 +237,7 @@ Check that your MDX file:
 
 ### AI score too low
 
-Review `docs/SEO-ARTICLE-GUIDE.md` and:
+Review `docs/SEO-PLAN.md` Phase 3 (Humanization Rules) and:
 - Add more personal anecdotes
 - Use contractions throughout
 - Vary sentence structure

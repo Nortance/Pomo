@@ -55,10 +55,11 @@ pomo/
 │   └── zh.json
 ├── scripts/
 │   ├── ai-detector.py         # AI content detection
-│   └── fetch-image.ts         # Unsplash image fetcher
+│   ├── fetch-image.ts         # Unsplash image fetcher
+│   └── keyword-research.py    # Google Trends keyword research
 └── docs/
-    ├── ARTICLES.md            # Blog system docs
-    ├── SEO-ARTICLE-GUIDE.md   # Writing guide for AI-proof content
+    ├── ARTICLES.md            # Blog system technical docs
+    ├── SEO-PLAN.md            # SEO strategy, article plan, writing process
     ├── I18N.md                # Internationalization docs
     └── TESTING_*.md           # Test documentation
 ```
@@ -74,6 +75,8 @@ npm test                 # Run tests (232 tests)
 # SEO Articles
 npm run ai-check -- --file content/articles/my-article.mdx  # Check AI score (target: 90%+)
 npm run fetch-image -- "search query" --name filename       # Fetch Unsplash image with attribution
+npm run keywords                                            # Research keywords via Google Trends
+npm run keywords -- "focus timer" "pomodoro"                # Research custom keywords
 
 # Screenshots
 npm run screenshot       # Capture localhost:3000

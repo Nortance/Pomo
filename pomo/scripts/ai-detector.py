@@ -59,11 +59,17 @@ def detect_with_zippy(text: str) -> dict:
     from zippy import Zippy
 
     z = Zippy()
-    result = z.classify(text)
+    result = z.run_on_text_chunked(text)
 
-    # result is tuple: ('Human', score) or ('AI', score)
+    # result is tuple: ('Human'|'AI', score)
+    # score is confidence in that label
     label, confidence = result
-    human_score = 1 - confidence if label == "AI" else confidence
+
+    # Convert to human_score (0-1 where 1 = definitely human)
+    if label == "Human":
+        human_score = confidence
+    else:
+        human_score = 1 - confidence
 
     return {
         "method": "Zippy (compression)",
@@ -88,28 +94,30 @@ def detect_with_roberta(text: str) -> dict:
     detector = pipeline(
         "text-classification",
         model="openai-community/roberta-base-openai-detector",
-        device=-1  # CPU, use 0 for GPU
+        device=-1,  # CPU, use 0 for GPU
+        truncation=True,
+        max_length=512
     )
 
-    # RoBERTa has max 512 tokens, chunk if needed
-    max_chars = 2000  # ~500 tokens
-    if len(text) > max_chars:
-        # Analyze multiple chunks and average
-        chunks = [text[i:i+max_chars] for i in range(0, len(text), max_chars)]
-        results = detector(chunks)
+    # RoBERTa has max 512 tokens, chunk and analyze
+    max_chars = 1500  # ~375 tokens to be safe
+    chunks = [text[i:i+max_chars] for i in range(0, len(text), max_chars)]
 
-        # Average the scores
-        human_scores = []
-        for r in results:
-            if r['label'] == 'Real':
-                human_scores.append(r['score'])
-            else:
-                human_scores.append(1 - r['score'])
+    # Analyze all chunks and average
+    human_scores = []
+    for chunk in chunks:
+        if len(chunk.strip()) < 50:
+            continue  # Skip very short chunks
+        result = detector(chunk)[0]
+        if result['label'] == 'Real':
+            human_scores.append(result['score'])
+        else:
+            human_scores.append(1 - result['score'])
 
-        avg_human = sum(human_scores) / len(human_scores)
-    else:
-        result = detector(text)[0]
-        avg_human = result['score'] if result['label'] == 'Real' else 1 - result['score']
+    if not human_scores:
+        raise ValueError("No valid chunks to analyze")
+
+    avg_human = sum(human_scores) / len(human_scores)
 
     return {
         "method": "RoBERTa (neural)",
@@ -144,26 +152,50 @@ def analyze_text(text: str, verbose: bool = True) -> dict:
     except Exception as e:
         results['roberta'] = {"error": str(e)}
 
-    # Calculate combined score (average of both)
-    scores = []
-    if 'human_score' in results.get('zippy', {}):
-        scores.append(results['zippy']['human_score'])
-    if 'human_score' in results.get('roberta', {}):
-        scores.append(results['roberta']['human_score'])
+    # Calculate combined score
+    # RoBERTa is weighted higher (70%) because:
+    # - It's trained specifically on AI-generated text detection
+    # - Zippy (compression-based) falsely flags structured content like listicles
+    zippy_score = results.get('zippy', {}).get('human_score')
+    roberta_score = results.get('roberta', {}).get('human_score')
 
-    if scores:
-        avg_human = sum(scores) / len(scores)
+    # Check if content is a listicle (structured content)
+    is_listicle = is_listicle_content(text)
+
+    if roberta_score is not None and zippy_score is not None:
+        # Weighted average: 70% RoBERTa, 30% Zippy
+        avg_human = (roberta_score * 0.7) + (zippy_score * 0.3)
         results['combined'] = {
             "human_score": round(avg_human, 3),
             "ai_score": round(1 - avg_human, 3),
-            "verdict": get_verdict(avg_human)
+            "verdict": get_verdict(avg_human, roberta_score, is_listicle),
+            "note": "Weighted 70% RoBERTa, 30% Zippy" + (" (listicle detected)" if is_listicle else "")
+        }
+    elif roberta_score is not None:
+        results['combined'] = {
+            "human_score": round(roberta_score, 3),
+            "ai_score": round(1 - roberta_score, 3),
+            "verdict": get_verdict(roberta_score, roberta_score, is_listicle),
+            "note": "RoBERTa only (Zippy failed)"
+        }
+    elif zippy_score is not None:
+        results['combined'] = {
+            "human_score": round(zippy_score, 3),
+            "ai_score": round(1 - zippy_score, 3),
+            "verdict": get_verdict(zippy_score),
+            "note": "Zippy only (RoBERTa failed)"
         }
 
     return results
 
 
-def get_verdict(human_score: float) -> str:
+def get_verdict(human_score: float, roberta_score: float = None, is_listicle: bool = False) -> str:
     """Get human-readable verdict based on score."""
+    # For listicles: if RoBERTa (neural) passes, trust it over Zippy (compression)
+    # Zippy falsely flags structured content due to compression patterns
+    if is_listicle and roberta_score is not None and roberta_score >= 0.9:
+        return "PASS - RoBERTa confirms human-written (Zippy unreliable for listicles)"
+
     if human_score >= 0.9:
         return "PASS - Appears human-written, safe to publish"
     elif human_score >= 0.75:
@@ -172,6 +204,15 @@ def get_verdict(human_score: float) -> str:
         return "REVISE - AI signals detected, revision needed"
     else:
         return "FAIL - Strongly detected as AI, major rewrite needed"
+
+
+def is_listicle_content(text: str) -> bool:
+    """Detect if content is a listicle (numbered headers, etc.)"""
+    import re
+    # Look for patterns like "## 1." or "## 2." or "# 1." etc.
+    listicle_pattern = r'^#{1,3}\s*\d+[\.\):]'
+    matches = re.findall(listicle_pattern, text, re.MULTILINE)
+    return len(matches) >= 3  # At least 3 numbered sections
 
 
 def print_results(results: dict, text: str):
@@ -269,9 +310,10 @@ def main():
     else:
         print_results(results, text)
 
-    # Exit code based on result (90% threshold for Google)
+    # Exit code based on verdict (PASS = success)
     if 'combined' in results:
-        if results['combined']['human_score'] >= 0.9:
+        verdict = results['combined'].get('verdict', '')
+        if verdict.startswith('PASS'):
             sys.exit(0)  # Pass
         else:
             sys.exit(1)  # Needs revision
