@@ -35,7 +35,7 @@ pomo/
 │   ├── stats-card.tsx
 │   ├── streak-heatmap.tsx
 │   └── goal-progress.tsx
-├── content/articles/          # MDX blog posts
+├── content/articles/[locale]/ # MDX blog posts (locale folders: en, es, etc.)
 ├── hooks/
 │   ├── use-app-state.ts       # Unified state management
 │   └── use-translations.ts    # i18n hook

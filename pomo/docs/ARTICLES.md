@@ -1,6 +1,6 @@
 # Articles System Documentation
 
-> **TL;DR:** Write MDX files in `content/articles/`, fetch images with `npm run fetch-image`, always include attribution.
+> **TL;DR:** Write MDX files in `content/articles/[locale]/` (e.g., `en/`, `es/`), generate images with `npm run generate-image`, always include attribution.
 
 ---
 
@@ -9,8 +9,12 @@
 ### 1. Create Article
 
 ```bash
-# Create new article file
-touch content/articles/my-article-slug.mdx
+# Create new article file in the English folder (default)
+touch content/articles/en/my-article-slug.mdx
+
+# Or for translations in other languages
+touch content/articles/es/my-article-slug.mdx  # Spanish
+touch content/articles/de/my-article-slug.mdx  # German
 ```
 
 ### 2. Add Frontmatter
@@ -66,15 +70,27 @@ npm run dev
 ```
 content/
 └── articles/
-    ├── my-first-article.mdx
-    └── another-article.mdx
+    ├── en/                        # English (default)
+    │   ├── my-first-article.mdx
+    │   └── another-article.mdx
+    ├── es/                        # Spanish translations
+    │   └── my-first-article.mdx
+    └── de/                        # German translations
+        └── my-first-article.mdx
 
 public/
 └── images/
     └── articles/
-        ├── hero-image.jpg
-        └── inline-image.jpg
+        ├── hero-image.webp
+        └── inline-image.webp
 ```
+
+### Locale Fallback
+
+If a translation doesn't exist for a locale, the system automatically falls back to English. This means:
+- You only need to translate articles you want to translate
+- All articles are available in all locales (English fallback)
+- The `locale` field in the article data shows which locale was actually used
 
 ---
 
@@ -225,7 +241,7 @@ See `docs/SEO-PLAN.md` for the complete writing process and humanization rules.
 ### "No articles found"
 
 Check that your MDX file:
-- Is in `content/articles/`
+- Is in `content/articles/en/` (or another locale folder)
 - Has `.mdx` extension
 - Has valid frontmatter with `published: true`
 

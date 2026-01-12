@@ -21,7 +21,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props) {
   const { locale, slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = getArticleBySlug(slug, locale);
 
   if (!article) {
     return { title: 'Article Not Found' };
@@ -85,7 +85,7 @@ const components = {
 
 export default async function ArticlePage({ params }: Props) {
   const { locale, slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = getArticleBySlug(slug, locale);
 
   if (!article) {
     notFound();

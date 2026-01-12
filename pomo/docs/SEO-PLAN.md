@@ -265,8 +265,8 @@ Track via: Google Search Console (free)
 ## Files
 
 ```
-content/articles/          # MDX articles go here
-public/images/articles/    # Images go here
+content/articles/[locale]/ # MDX articles by locale (en/, es/, de/, etc.)
+public/images/articles/    # Images go here (shared across locales)
 docs/SEO-PLAN.md          # This file (the plan)
 docs/ARTICLES.md          # Technical MDX docs
 ```
@@ -426,25 +426,25 @@ Each language has different "natural" patterns:
 
 ### File Structure for Translations
 
-Articles are NOT duplicated. Same slug works for all locales:
+Articles are organized by locale folder:
 
 ```
 content/articles/
-└── pomodoro-vs-flow-state.mdx    # English content
+├── en/                              # English (default)
+│   └── pomodoro-vs-flow-state.mdx
+├── es/                              # Spanish
+│   └── pomodoro-vs-flow-state.mdx
+└── de/                              # German
+    └── pomodoro-vs-flow-state.mdx
 
 Routes automatically generated:
 /en/articles/pomodoro-vs-flow-state  → English
-/es/articles/pomodoro-vs-flow-state  → Spanish (when translated)
-/de/articles/pomodoro-vs-flow-state  → German (when translated)
+/es/articles/pomodoro-vs-flow-state  → Spanish
+/de/articles/pomodoro-vs-flow-state  → German
 ...
 ```
 
-**Current limitation**: MDX content is English only. For true i18n, we'd need:
-- Separate content folders per locale, OR
-- MDX with i18n keys, OR
-- CMS with translation management
-
-**Recommended future approach**: When ready for i18n, create `content/articles/[locale]/` structure.
+**Fallback behavior**: If a translation doesn't exist for a locale, the system automatically falls back to English.
 
 ### Translation Priority Matrix
 

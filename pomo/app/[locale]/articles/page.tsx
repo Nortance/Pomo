@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function ArticlesPage({ params }: Props) {
   const { locale } = await params;
-  const articles = getAllArticles();
+  const articles = getAllArticles(locale);
 
   return (
     <div className="min-h-screen bg-background">
