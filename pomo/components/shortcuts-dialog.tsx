@@ -1,29 +1,32 @@
 "use client"
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface ShortcutsDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-const shortcuts = [
-  { key: "Space", action: "Start / Pause timer" },
-  { key: "1", action: "Switch to Focus" },
-  { key: "2", action: "Switch to Break" },
-  { key: "3", action: "Switch to Rest" },
-  { key: "T", action: "Add new task" },
-  { key: "R", action: "Open / Close Report" },
-  { key: "S", action: "Open / Close Settings" },
-  { key: "?", action: "Open / Close Shortcuts" },
-]
-
 export function ShortcutsDialog({ open, onOpenChange }: ShortcutsDialogProps) {
+  const { t } = useTranslations()
+
+  const shortcuts = [
+    { key: "Space", action: t('shortcuts.startPause') },
+    { key: "1", action: t('shortcuts.switchFocus') },
+    { key: "2", action: t('shortcuts.switchBreak') },
+    { key: "3", action: t('shortcuts.switchRest') },
+    { key: "T", action: t('shortcuts.addTask') },
+    { key: "R", action: t('shortcuts.openReport') },
+    { key: "S", action: t('shortcuts.openSettings') },
+    { key: "?", action: t('shortcuts.openShortcuts') },
+  ]
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-sm font-medium tracking-wide">Keyboard Shortcuts</DialogTitle>
+          <DialogTitle className="text-sm font-medium tracking-wide">{t('shortcuts.title')}</DialogTitle>
         </DialogHeader>
 
         <div className="py-4">

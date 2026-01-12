@@ -4,12 +4,14 @@ import HeatMap from "@uiw/react-heat-map"
 import { useTheme } from "next-themes"
 import { useState, useEffect, useMemo } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface StreakHeatmapProps {
   data: { date: string; count: number; minutes: number; level: number }[][]
 }
 
 export function StreakHeatmap({ data }: StreakHeatmapProps) {
+  const { t } = useTranslations()
   const { resolvedTheme, theme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const [hoveredDay, setHoveredDay] = useState<{ date: string; count: number; minutes: number } | null>(null)
@@ -107,7 +109,7 @@ export function StreakHeatmap({ data }: StreakHeatmapProps) {
     return (
       <div>
         <div className="flex items-center justify-between mb-3 sm:mb-4">
-          <h3 className="text-xs sm:text-sm font-medium tracking-wide">Activity</h3>
+          <h3 className="text-xs sm:text-sm font-medium tracking-wide">{t('activity.title')}</h3>
         </div>
         <div className="border border-border bg-card p-4 sm:p-5">
           <div className="h-[140px] animate-pulse bg-muted rounded" />
@@ -128,7 +130,7 @@ export function StreakHeatmap({ data }: StreakHeatmapProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3 sm:mb-4">
-        <h3 className="text-xs sm:text-sm font-medium tracking-wide">Activity</h3>
+        <h3 className="text-xs sm:text-sm font-medium tracking-wide">{t('activity.title')}</h3>
       </div>
 
       <div className="border border-border bg-card p-4 sm:p-5">
@@ -136,13 +138,15 @@ export function StreakHeatmap({ data }: StreakHeatmapProps) {
         <div className="h-5 mb-3">
           <p className="text-xs sm:text-sm text-muted-foreground">
             <span className="text-foreground font-medium">
-              {displayDay.minutes} min
+              {displayDay.minutes} {t('activity.min')}
             </span>
             {" · "}
-            {displayDay.count} pomodoro{displayDay.count !== 1 ? "s" : ""}
-            {" on "}
+            {displayDay.count === 1
+              ? t('activity.pomodorosOn', { count: displayDay.count })
+              : t('activity.pomodorosOnPlural', { count: displayDay.count })}
+            {" "}
             {formatDisplayDate(displayDay.date)}
-            {displayDay.date === todayStr && !hoveredDay && " (today)"}
+            {displayDay.date === todayStr && !hoveredDay && ` ${t('activity.todayLabel')}`}
           </p>
         </div>
 
@@ -216,7 +220,7 @@ export function StreakHeatmap({ data }: StreakHeatmapProps) {
 
           {/* Legend */}
           <div className="flex items-center gap-1.5">
-            <span>Less</span>
+            <span>{t('activity.less')}</span>
             <div className="flex gap-1">
               {[0, 1, 3, 5, 8].map((threshold) => (
                 <div
@@ -226,7 +230,7 @@ export function StreakHeatmap({ data }: StreakHeatmapProps) {
                 />
               ))}
             </div>
-            <span>More</span>
+            <span>{t('activity.more')}</span>
           </div>
         </div>
       </div>

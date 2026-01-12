@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Plus, MoreVertical, Trash2, Target } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface Task {
   id: string
@@ -24,10 +25,12 @@ interface TaskListProps {
 }
 
 export function TaskList({ tasks, activeTaskId, onSelectTask, onAddTask, onUpdateTask, onDeleteTask }: TaskListProps) {
+  const { t } = useTranslations()
+
   return (
     <div>
       <div className="flex items-center justify-between mb-3 sm:mb-4">
-        <h2 className="text-xs sm:text-sm font-medium tracking-wide">Tasks</h2>
+        <h2 className="text-xs sm:text-sm font-medium tracking-wide">{t('tasks.title')}</h2>
         <div className="flex items-center gap-1">
           <kbd className="hidden sm:flex h-5 px-1.5 bg-muted text-muted-foreground text-[10px] items-center">T</kbd>
           <DropdownMenu>
@@ -37,10 +40,10 @@ export function TaskList({ tasks, activeTaskId, onSelectTask, onAddTask, onUpdat
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => tasks.forEach((t) => onUpdateTask(t.id, { completed: false }))}>
-                Clear finished
+              <DropdownMenuItem onClick={() => tasks.forEach((task) => onUpdateTask(task.id, { completed: false }))}>
+                {t('tasks.clearFinished')}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => tasks.forEach((t) => onDeleteTask(t.id))}>Clear all</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => tasks.forEach((task) => onDeleteTask(task.id))}>{t('tasks.clearAll')}</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -50,8 +53,8 @@ export function TaskList({ tasks, activeTaskId, onSelectTask, onAddTask, onUpdat
         {tasks.length === 0 && (
           <div className="border border-dashed border-border bg-card p-6 sm:p-8 text-center">
             <Target className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 sm:mb-3 text-muted-foreground/50" />
-            <p className="text-xs sm:text-sm text-muted-foreground mb-1">No tasks yet</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">Add a task to track your focus sessions</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mb-1">{t('tasks.noTasksYet')}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">{t('tasks.addTaskHint')}</p>
           </div>
         )}
 
@@ -82,7 +85,7 @@ export function TaskList({ tasks, activeTaskId, onSelectTask, onAddTask, onUpdat
               </div>
               <div className="flex items-center gap-1 sm:gap-2">
                 {activeTaskId === task.id && (
-                  <span className="text-[10px] sm:text-xs font-medium uppercase tracking-wide">Active</span>
+                  <span className="text-[10px] sm:text-xs font-medium uppercase tracking-wide">{t('tasks.active')}</span>
                 )}
                 <div className="flex gap-0.5 mr-1 hidden sm:flex">
                   {Array.from({ length: task.estimatedPomodoros }).map((_, i) => (
@@ -117,7 +120,7 @@ export function TaskList({ tasks, activeTaskId, onSelectTask, onAddTask, onUpdat
           className="w-full border border-dashed border-border bg-card p-3 sm:p-4 text-xs sm:text-sm text-muted-foreground hover:text-foreground hover:border-foreground hover:bg-muted/30 transition-all duration-150 flex items-center justify-center gap-2"
         >
           <Plus className="h-4 w-4" />
-          Add Task
+          {t('tasks.addTask')}
         </button>
       </div>
     </div>

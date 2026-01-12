@@ -2,6 +2,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ACHIEVEMENTS, getUnlockedCount } from "@/lib/achievements"
+import { useTranslations } from "@/hooks/use-translations"
 import type { UnlockedAchievement } from "@/lib/types"
 import Image from "next/image"
 import { useMemo } from "react"
@@ -19,6 +20,7 @@ export function AchievementsDialog({
   achievements,
   markAchievementsSeen,
 }: AchievementsDialogProps) {
+  const { t } = useTranslations()
   const unlockedIds = useMemo(() => achievements.map((a) => a.id), [achievements])
   const { unlocked, total } = getUnlockedCount(unlockedIds)
 
@@ -38,10 +40,10 @@ export function AchievementsDialog({
 
   // Group achievements by category
   const categories = [
-    { id: 'milestone', name: 'Milestones', achievements: ACHIEVEMENTS.filter((a) => a.category === 'milestone') },
-    { id: 'streak', name: 'Streaks', achievements: ACHIEVEMENTS.filter((a) => a.category === 'streak') },
-    { id: 'level', name: 'Levels', achievements: ACHIEVEMENTS.filter((a) => a.category === 'level') },
-    { id: 'special', name: 'Special', achievements: ACHIEVEMENTS.filter((a) => a.category === 'special') },
+    { id: 'milestone', name: t('achievements.milestones'), achievements: ACHIEVEMENTS.filter((a) => a.category === 'milestone') },
+    { id: 'streak', name: t('achievements.streaks'), achievements: ACHIEVEMENTS.filter((a) => a.category === 'streak') },
+    { id: 'level', name: t('achievements.levels'), achievements: ACHIEVEMENTS.filter((a) => a.category === 'level') },
+    { id: 'special', name: t('achievements.special'), achievements: ACHIEVEMENTS.filter((a) => a.category === 'special') },
   ]
 
   return (
@@ -49,9 +51,9 @@ export function AchievementsDialog({
       <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-sm font-medium tracking-wide flex items-center justify-between">
-            <span>Achievements</span>
+            <span>{t('achievements.title')}</span>
             <span className="text-xs text-muted-foreground font-normal">
-              {unlocked}/{total} unlocked
+              {t('achievements.unlocked', { unlocked, total })}
             </span>
           </DialogTitle>
         </DialogHeader>

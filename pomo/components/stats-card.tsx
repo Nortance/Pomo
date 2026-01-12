@@ -2,6 +2,7 @@
 
 import { Flame, Zap, TrendingUp } from "lucide-react"
 import Image from "next/image"
+import { useTranslations } from "@/hooks/use-translations"
 import type { PersonalRecords, Level } from "@/lib/types"
 
 // Map level name to ghost icon
@@ -28,13 +29,14 @@ export function StatsCard({
   todayPomodoros,
   level,
 }: StatsCardProps) {
+  const { t } = useTranslations()
 
   // Check if current streak is the longest
   const isNewRecord = longestStreak !== undefined && currentStreak > 0 && currentStreak >= longestStreak
 
   return (
     <div>
-      <h2 className="text-xs sm:text-sm font-medium tracking-wide mb-3 sm:mb-4">Stats</h2>
+      <h2 className="text-xs sm:text-sm font-medium tracking-wide mb-3 sm:mb-4">{t('stats.title')}</h2>
       <div className="border border-border bg-card">
       {level && (
         <div className="border-b border-border px-4 sm:px-5 py-4 sm:py-5 bg-muted/30">
@@ -54,7 +56,7 @@ export function StatsCard({
             <div className="flex-1 min-w-0">
               <div className="flex items-baseline gap-2 mb-1">
                 <span className="text-sm sm:text-base font-medium tracking-wide">{level.name}</span>
-                <span className="text-xs text-muted-foreground">Level {level.tier}</span>
+                <span className="text-xs text-muted-foreground">{t('stats.level')} {level.tier}</span>
               </div>
 
               {/* Progress Bar */}
@@ -90,7 +92,7 @@ export function StatsCard({
             <p className="text-lg sm:text-2xl font-light tabular-nums">
               {totalXP.toLocaleString()}
             </p>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wide">XP (Minutes)</p>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wide">{t('stats.xpMinutes')}</p>
           </div>
 
           {/* Current Streak */}
@@ -103,7 +105,7 @@ export function StatsCard({
               <span className="text-xs sm:text-sm text-muted-foreground">d</span>
             </p>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wide">
-              {isNewRecord ? "Best!" : "Streak"}
+              {isNewRecord ? t('stats.best') : t('stats.streak')}
             </p>
           </div>
 
@@ -113,7 +115,7 @@ export function StatsCard({
               <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
             </div>
             <p className="text-lg sm:text-2xl font-light tabular-nums">{todayPomodoros}</p>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wide">Today</p>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wide">{t('stats.today')}</p>
           </div>
         </div>
       </div>

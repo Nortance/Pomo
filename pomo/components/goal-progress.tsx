@@ -1,6 +1,7 @@
 "use client"
 
 import { Target } from "lucide-react"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface GoalProgressProps {
   goalProgress: {
@@ -10,6 +11,7 @@ interface GoalProgressProps {
 }
 
 export function GoalProgress({ goalProgress }: GoalProgressProps) {
+  const { t } = useTranslations()
   const hasGoals = goalProgress.daily.target || goalProgress.weekly.target
 
   if (!hasGoals) return null
@@ -18,7 +20,7 @@ export function GoalProgress({ goalProgress }: GoalProgressProps) {
     <div className="border border-border bg-card p-3 sm:p-4 mb-4 sm:mb-6">
       <div className="flex items-center gap-2 mb-3">
         <Target className="h-4 w-4 text-muted-foreground" />
-        <span className="text-xs font-medium tracking-wide uppercase text-muted-foreground">Goals</span>
+        <span className="text-xs font-medium tracking-wide uppercase text-muted-foreground">{t('goals.title')}</span>
       </div>
 
       <div className="space-y-3">
@@ -26,7 +28,7 @@ export function GoalProgress({ goalProgress }: GoalProgressProps) {
         {goalProgress.daily.target && (
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs text-muted-foreground">Daily Pomo Target</span>
+              <span className="text-xs text-muted-foreground">{t('goals.dailyTarget')}</span>
               <span className="text-xs tabular-nums font-medium">
                 {goalProgress.daily.current}/{goalProgress.daily.target}
               </span>
@@ -44,7 +46,7 @@ export function GoalProgress({ goalProgress }: GoalProgressProps) {
         {goalProgress.weekly.target && (
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs text-muted-foreground">Weekly Pomo Target</span>
+              <span className="text-xs text-muted-foreground">{t('goals.weeklyTarget')}</span>
               <span className="text-xs tabular-nums font-medium">
                 {goalProgress.weekly.current}/{goalProgress.weekly.target}
               </span>

@@ -4,6 +4,7 @@ import type { Metadata } from "next"
 import "./globals.css"
 
 import { ThemeProvider } from "@/components/theme-provider"
+import { AnalyticsProvider } from "@/components/analytics-provider"
 import { Toaster } from "@/components/ui/sonner"
 
 import { Geist_Mono as V0_Font_Geist_Mono, Montserrat } from 'next/font/google'
@@ -224,7 +225,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
@@ -232,10 +233,12 @@ export default function RootLayout({
         />
       </head>
       <body className={`font-sans antialiased ${montserrat.variable}`}>
-        <ThemeProvider>
-          {children}
-          <Toaster />
-        </ThemeProvider>
+        <AnalyticsProvider>
+          <ThemeProvider>
+            {children}
+            <Toaster />
+          </ThemeProvider>
+        </AnalyticsProvider>
       </body>
     </html>
   )

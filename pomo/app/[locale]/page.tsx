@@ -4,18 +4,29 @@ import { useEffect, useCallback, useState } from "react"
 import dynamic from "next/dynamic"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Settings, BarChart3, User, Keyboard, Sparkles, SkipForward, Award } from "lucide-react"
+import { Settings, BarChart3, User, Keyboard, Sparkles, SkipForward, Award, Menu } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { TaskList } from "@/components/task-list"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { AmbientSounds } from "@/components/ambient-sounds"
 import { StatsCard } from "@/components/stats-card"
 import { StreakHeatmap } from "@/components/streak-heatmap"
 import { GoalProgress } from "@/components/goal-progress"
+import { LanguageSwitcher } from "@/components/language-switcher"
 import { checkNewAchievements } from "@/lib/achievements"
+import { track } from "@/lib/analytics"
+import { MixpanelEvents } from "@/lib/mixpanel-events"
 import { useAppState } from "@/hooks/use-app-state"
 import { useCelebration } from "@/hooks/use-celebration"
 import { useSound } from "@/hooks/use-sound"
 import { useOnboarding } from "@/hooks/use-onboarding"
+import { useTranslations } from "@/hooks/use-translations"
 import type { TimerMode } from "@/lib/types"
 
 // Lazy load dialogs - only loaded when user opens them
@@ -113,6 +124,9 @@ export default function PomodoroTimer() {
   // Onboarding tour for first-time users
   const { startSettingsTour } = useOnboarding()
 
+  // Translations
+  const { t } = useTranslations()
+
   // Track previous stats to detect new achievements and level-ups
   const [prevTotalPomodoros, setPrevTotalPomodoros] = useState(0)
   const [prevLevelTier, setPrevLevelTier] = useState(0)
@@ -190,6 +204,10 @@ export default function PomodoroTimer() {
         // Pass actual focused duration (startDuration in minutes) for accurate tracking
         const xpEarned = Math.round(timer.startDuration / 60)
         recordPomodoro(xpEarned)
+        track(MixpanelEvents.POMODORO_COMPLETED, {
+          duration_minutes: xpEarned,
+          had_active_task: !!activeTaskId,
+        })
         if (activeTaskId) {
           completeTaskPomodoro(activeTaskId)
         }
@@ -239,6 +257,9 @@ export default function PomodoroTimer() {
         case " ":
           e.preventDefault()
           playClick()
+          if (!timer.isRunning) {
+            track(MixpanelEvents.TIMER_STARTED, { mode: timer.mode })
+          }
           setTimerRunning(!timer.isRunning)
           break
         case "1":
@@ -314,54 +335,107 @@ export default function PomodoroTimer() {
             </span>
           </div>
           <div className="flex items-center gap-0.5 sm:gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setAchievementsOpen(true)}
-              className="text-xs gap-1.5 h-8 px-2.5 sm:px-3"
-              aria-label="Achievements"
-            >
-              <Award className="h-4 w-4" />
-              <span className="hidden sm:inline">Badges</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setReportOpen(true)}
-              className="text-xs gap-1.5 h-8 px-2.5 sm:px-3"
-              aria-label="Report"
-            >
-              <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline">Report</span>
-              <kbd className="hidden lg:inline-flex ml-1 h-5 items-center px-1.5 bg-muted text-muted-foreground text-[10px]">
-                R
-              </kbd>
-            </Button>
+            {/* Settings - Always Visible (leftmost) */}
             <Button
               id="settings-button"
               variant="ghost"
               size="sm"
               onClick={() => setSettingsOpen(true)}
               className="text-xs gap-1.5 h-8 px-2.5 sm:px-3"
-              aria-label="Settings"
+              aria-label={t('nav.settings')}
             >
               <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Settings</span>
+              <span className="hidden sm:inline">{t('nav.settings')}</span>
               <kbd className="hidden lg:inline-flex ml-1 h-5 items-center px-1.5 bg-muted text-muted-foreground text-[10px]">
                 S
               </kbd>
             </Button>
-            <Link href="/signin" aria-label="Sign In">
-              <Button variant="ghost" size="sm" className="text-xs gap-1.5 h-8 px-2.5 sm:px-3">
-                <User className="h-4 w-4" />
-                <span className="hidden sm:inline">Sign In</span>
-              </Button>
-            </Link>
-            <ThemeToggle />
-            <AmbientSounds />
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShortcutsOpen(true)} aria-label="Keyboard shortcuts">
+
+            {/* Desktop Navigation */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setAchievementsOpen(true)}
+              className="hidden sm:flex text-xs gap-1.5 h-8 px-2.5 sm:px-3"
+              aria-label={t('nav.badges')}
+            >
+              <Award className="h-4 w-4" />
+              <span>{t('nav.badges')}</span>
+            </Button>
+            <div className="hidden sm:block">
+              <ThemeToggle />
+            </div>
+            <div className="hidden sm:block">
+              <AmbientSounds />
+            </div>
+            <div className="hidden sm:block">
+              <LanguageSwitcher />
+            </div>
+            <Button variant="ghost" size="icon" className="hidden sm:flex h-8 w-8" onClick={() => setShortcutsOpen(true)} aria-label="Keyboard shortcuts">
               <Keyboard className="h-4 w-4" />
             </Button>
+
+            {/* Desktop Dropdown Menu - Report & Sign In (rightmost) */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="hidden sm:flex h-8 w-8" aria-label="More options">
+                  <Menu className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => setReportOpen(true)}>
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  {t('nav.report')}
+                  <kbd className="ml-auto text-[10px] text-muted-foreground">R</kbd>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/signin" className="flex items-center">
+                    <User className="h-4 w-4 mr-2" />
+                    {t('nav.signIn')}
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Mobile Hamburger Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="sm:hidden h-8 w-8" aria-label="Menu">
+                  <Menu className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => setAchievementsOpen(true)}>
+                  <Award className="h-4 w-4 mr-2" />
+                  {t('nav.badges')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setReportOpen(true)}>
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  {t('nav.report')}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/signin" className="flex items-center">
+                    <User className="h-4 w-4 mr-2" />
+                    {t('nav.signIn')}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <div className="flex items-center justify-between px-2 py-1.5">
+                  <span className="text-sm">Theme</span>
+                  <ThemeToggle />
+                </div>
+                <div className="flex items-center justify-between px-2 py-1.5">
+                  <span className="text-sm">Sounds</span>
+                  <AmbientSounds />
+                </div>
+                <div className="flex items-center justify-between px-2 py-1.5">
+                  <span className="text-sm">Language</span>
+                  <LanguageSwitcher />
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
@@ -383,7 +457,7 @@ export default function PomodoroTimer() {
                     : "text-muted-foreground border border-dashed border-border hover:text-foreground hover:border-foreground"
                 }`}
               >
-                {m === "pomodoro" ? "Focus" : m === "shortBreak" ? "Break" : "Rest"}
+                {m === "pomodoro" ? t('timer.focus') : m === "shortBreak" ? t('timer.break') : t('timer.rest')}
               </button>
             ))}
           </div>
@@ -391,7 +465,7 @@ export default function PomodoroTimer() {
           {/* Timer Display with Progress Ring */}
           <div className="flex flex-col items-center mb-6 sm:mb-10">
             <div className="relative">
-              <svg className="w-56 h-56 sm:w-72 sm:h-72 -rotate-90" viewBox="0 0 300 300">
+              <svg className="w-72 h-72 sm:w-96 sm:h-96 -rotate-90" viewBox="0 0 300 300">
                 <circle
                   cx="150"
                   cy="150"
@@ -415,7 +489,7 @@ export default function PomodoroTimer() {
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <div className="text-5xl sm:text-7xl font-light tracking-tighter tabular-nums">
+                <div className="text-6xl sm:text-8xl font-light tracking-tighter tabular-nums">
                   {formatTime(timer.timeLeft)}
                 </div>
                 <div className="mt-2 text-center">
@@ -425,7 +499,7 @@ export default function PomodoroTimer() {
                     </p>
                   ) : (
                     <p className="text-xs sm:text-sm text-muted-foreground">
-                      {timer.mode === "pomodoro" ? "Time to focus" : timer.mode === "shortBreak" ? "Take a break" : "Time to rest"}
+                      {timer.mode === "pomodoro" ? t('timer.timeToFocus') : timer.mode === "shortBreak" ? t('timer.takeABreak') : t('timer.timeToRest')}
                     </p>
                   )}
                 </div>
@@ -444,10 +518,13 @@ export default function PomodoroTimer() {
               }`}
               onClick={() => {
                 playClick()
+                if (!timer.isRunning) {
+                  track(MixpanelEvents.TIMER_STARTED, { mode: timer.mode })
+                }
                 setTimerRunning(!timer.isRunning)
               }}
             >
-              {timer.isRunning ? "Pause" : "Start"}
+              {timer.isRunning ? t('timer.pause') : t('timer.start')}
               <kbd className="ml-2 mt-0.5 text-[10px] opacity-60 hidden sm:inline">space</kbd>
             </Button>
             {timer.isRunning && (
@@ -461,28 +538,6 @@ export default function PomodoroTimer() {
                 <SkipForward className="h-4 w-4" />
               </Button>
             )}
-          </div>
-        </div>
-
-        {/* Session Stats */}
-        <div className="flex items-center justify-center gap-4 sm:gap-6 mt-6 sm:mt-8">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Session</span>
-            <div className="flex gap-1">
-              {Array.from({ length: settings.longBreakInterval }).map((_, i) => (
-                <div
-                  key={i}
-                  className={`w-1.5 h-1.5 sm:w-2 sm:h-2 transition-colors ${
-                    i < (sessionPomodoros % settings.longBreakInterval) ? "bg-foreground" : "bg-border"
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-          <div className="h-4 w-px bg-border" />
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Total</span>
-            <span className="text-xs sm:text-sm tabular-nums font-medium">{sessionPomodoros}</span>
           </div>
         </div>
 
@@ -520,10 +575,10 @@ export default function PomodoroTimer() {
           <div className="border border-border p-3 sm:p-4 flex items-center justify-between hover:bg-muted/50 transition-colors group">
             <div className="flex items-center gap-2 sm:gap-3">
               <Sparkles className="h-4 w-4" />
-              <span className="text-xs sm:text-sm">Unlock premium features</span>
+              <span className="text-xs sm:text-sm">{t('premium.unlock')}</span>
             </div>
             <span className="text-xs text-muted-foreground group-hover:translate-x-0.5 transition-transform">
-              Learn more →
+              {t('premium.learnMore')} →
             </span>
           </div>
         </Link>

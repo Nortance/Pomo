@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { useTranslations } from "@/hooks/use-translations"
 import type { Settings, Goals } from "@/lib/types"
 
 interface SettingsDialogProps {
@@ -27,6 +28,8 @@ export function SettingsDialog({
   onGoalsChange,
   onOpen,
 }: SettingsDialogProps) {
+  const { t } = useTranslations()
+
   // Local state for inputs to allow intermediate editing (empty values while typing)
   const [pomodoro, setPomodoro] = useState(String(settings.pomodoro))
   const [shortBreak, setShortBreak] = useState(String(settings.shortBreak))
@@ -67,16 +70,16 @@ export function SettingsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-sm font-medium tracking-wide">Settings</DialogTitle>
+          <DialogTitle className="text-sm font-medium tracking-wide">{t('settings.title')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           {/* Timer Section */}
           <div className="space-y-4">
-            <h3 className="text-xs text-muted-foreground tracking-wide uppercase">Timer (minutes)</h3>
+            <h3 className="text-xs text-muted-foreground tracking-wide uppercase">{t('settings.timerMinutes')}</h3>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs">Focus</Label>
+                <Label className="text-xs">{t('settings.focus')}</Label>
                 <Input
                   id="focus-duration-input"
                   type="number"
@@ -89,7 +92,7 @@ export function SettingsDialog({
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Break</Label>
+                <Label className="text-xs">{t('settings.break')}</Label>
                 <Input
                   type="number"
                   min={1}
@@ -101,7 +104,7 @@ export function SettingsDialog({
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Rest</Label>
+                <Label className="text-xs">{t('settings.rest')}</Label>
                 <Input
                   type="number"
                   min={1}
@@ -118,21 +121,21 @@ export function SettingsDialog({
           {/* Auto Start Section */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <Label className="text-sm">Auto Start Breaks</Label>
+              <Label className="text-sm">{t('settings.autoStartBreaks')}</Label>
               <Switch
                 checked={settings.autoStartBreaks}
                 onCheckedChange={(checked) => onSettingsChange({ autoStartBreaks: checked })}
               />
             </div>
             <div className="flex items-center justify-between">
-              <Label className="text-sm">Auto Start Pomodoros</Label>
+              <Label className="text-sm">{t('settings.autoStartPomodoros')}</Label>
               <Switch
                 checked={settings.autoStartPomodoros}
                 onCheckedChange={(checked) => onSettingsChange({ autoStartPomodoros: checked })}
               />
             </div>
             <div className="flex items-center justify-between">
-              <Label className="text-sm">Sound Effects</Label>
+              <Label className="text-sm">{t('settings.soundEffects')}</Label>
               <Switch
                 checked={settings.soundEnabled}
                 onCheckedChange={(checked) => onSettingsChange({ soundEnabled: checked })}
@@ -142,7 +145,7 @@ export function SettingsDialog({
 
           {/* Rest Interval */}
           <div className="space-y-2">
-            <Label className="text-sm">Rest Interval</Label>
+            <Label className="text-sm">{t('settings.restInterval')}</Label>
             <Input
               type="number"
               min={1}
@@ -152,15 +155,15 @@ export function SettingsDialog({
               onBlur={() => handleBlur("longBreakInterval", longBreakInterval, 4)}
               className="text-sm w-20"
             />
-            <p className="text-xs text-muted-foreground">Rest after every {settings.longBreakInterval} pomodoros</p>
+            <p className="text-xs text-muted-foreground">{t('settings.restAfterEvery', { count: settings.longBreakInterval })}</p>
           </div>
 
           {/* Goals Section */}
           <div className="space-y-4">
-            <h3 className="text-xs text-muted-foreground tracking-wide uppercase">Goals (pomodoros)</h3>
+            <h3 className="text-xs text-muted-foreground tracking-wide uppercase">{t('settings.goals')}</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs">Daily Pomo Goal</Label>
+                <Label className="text-xs">{t('settings.dailyGoal')}</Label>
                 <Input
                   type="number"
                   min={0}
@@ -179,7 +182,7 @@ export function SettingsDialog({
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Weekly Pomo Goal</Label>
+                <Label className="text-xs">{t('settings.weeklyGoal')}</Label>
                 <Input
                   type="number"
                   min={0}
@@ -199,13 +202,13 @@ export function SettingsDialog({
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-              Set goals to track your progress. Leave empty to disable.
+              {t('settings.goalsHint')}
             </p>
           </div>
         </div>
 
         <div className="flex justify-end">
-          <Button onClick={() => onOpenChange(false)}>Done</Button>
+          <Button onClick={() => onOpenChange(false)}>{t('settings.done')}</Button>
         </div>
       </DialogContent>
     </Dialog>

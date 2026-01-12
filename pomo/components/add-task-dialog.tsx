@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { ChevronUp, ChevronDown } from "lucide-react"
+import { useTranslations } from "@/hooks/use-translations"
 
 interface AddTaskDialogProps {
   open: boolean
@@ -14,6 +15,7 @@ interface AddTaskDialogProps {
 }
 
 export function AddTaskDialog({ open, onOpenChange, onAddTask }: AddTaskDialogProps) {
+  const { t } = useTranslations()
   const [title, setTitle] = useState("")
   const [estimatedPomodoros, setEstimatedPomodoros] = useState(1)
   const [note, setNote] = useState("")
@@ -40,13 +42,13 @@ export function AddTaskDialog({ open, onOpenChange, onAddTask }: AddTaskDialogPr
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-sm font-medium tracking-wide">Add Task</DialogTitle>
+          <DialogTitle className="text-sm font-medium tracking-wide">{t('tasks.addTask')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
             <Input
-              placeholder="What are you working on?"
+              placeholder={t('tasks.whatWorking')}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="text-sm"
@@ -54,7 +56,7 @@ export function AddTaskDialog({ open, onOpenChange, onAddTask }: AddTaskDialogPr
             />
 
             <div className="space-y-2">
-              <label className="text-xs text-muted-foreground tracking-wide uppercase">Est. Pomodoros</label>
+              <label className="text-xs text-muted-foreground tracking-wide uppercase">{t('tasks.estPomodoros')}</label>
               <div className="flex items-center gap-2">
                 <div className="border border-border px-3 py-2 text-sm tabular-nums w-16 text-center">
                   {estimatedPomodoros}
@@ -88,11 +90,11 @@ export function AddTaskDialog({ open, onOpenChange, onAddTask }: AddTaskDialogPr
                 onClick={() => setShowNote(true)}
                 className="text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
-                + Add Note
+                {t('tasks.addNote')}
               </button>
             ) : (
               <Textarea
-                placeholder="Add a note..."
+                placeholder={t('tasks.addNotePlaceholder')}
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 className="text-sm min-h-20"
@@ -102,10 +104,10 @@ export function AddTaskDialog({ open, onOpenChange, onAddTask }: AddTaskDialogPr
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={!title.trim()}>
-              Save
+              {t('common.save')}
               <kbd className="ml-2 mt-0.5 text-[10px] opacity-60 hidden sm:inline">enter</kbd>
             </Button>
           </div>
