@@ -1,8 +1,9 @@
 "use client"
 
-import { useEffect, useCallback, useState } from "react"
+import { useEffect, useCallback, useState, useMemo } from "react"
 import dynamic from "next/dynamic"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Settings, BarChart3, User, Keyboard, Sparkles, SkipForward, Award, Menu } from "lucide-react"
 import {
@@ -54,6 +55,10 @@ const LevelUpModal = dynamic(
   () => import("@/components/level-up-modal").then((mod) => mod.LevelUpModal),
   { ssr: false }
 )
+const QuitConfirmDialog = dynamic(
+  () => import("@/components/quit-confirm-dialog").then((mod) => mod.QuitConfirmDialog),
+  { ssr: false }
+)
 
 export default function PomodoroTimer() {
   // Dialog state (UI only, doesn't need persistence)
@@ -63,6 +68,8 @@ export default function PomodoroTimer() {
   const [addTaskOpen, setAddTaskOpen] = useState(false)
   const [achievementsOpen, setAchievementsOpen] = useState(false)
   const [levelUpOpen, setLevelUpOpen] = useState(false)
+  const [quitConfirmOpen, setQuitConfirmOpen] = useState(false)
+  const [pendingMode, setPendingMode] = useState<TimerMode | null>(null)
 
   // Unified app state
   const {
@@ -183,12 +190,48 @@ export default function PomodoroTimer() {
   const progress = timer.startDuration > 0 ? 1 - timer.timeLeft / timer.startDuration : 0
   const circumference = 2 * Math.PI * 140
 
+  // Ghost selection based on timer state
+  const currentGhost = useMemo(() => {
+    // When timer is running, show mode-specific ghost
+    if (timer.isRunning) {
+      switch (timer.mode) {
+        case "pomodoro":
+          return "/ghosts/ghost-fire.webp" // Energetic, focused
+        case "shortBreak":
+          return "/ghosts/ghost-heart.webp" // Relaxed, happy
+        case "longBreak":
+          return "/ghosts/ghost-moon.webp" // Restful, sleepy
+      }
+    }
+    // When paused/idle, show level-based ghost
+    const levelGhosts: Record<string, string> = {
+      Apprentice: "/ghosts/ghost-apprentice.webp",
+      Craftsman: "/ghosts/ghost-craftsman.webp",
+      Master: "/ghosts/ghost-master.webp",
+      Grandmaster: "/ghosts/ghost-grandmaster.webp",
+    }
+    return levelGhosts[level.name] || "/ghosts/ghost-apprentice.webp"
+  }, [timer.isRunning, timer.mode, level.name])
+
   const switchMode = useCallback(
     (newMode: TimerMode) => {
+      // Check if switching away from an active focus session
+      if (timer.isRunning && timer.mode === "pomodoro" && newMode !== "pomodoro") {
+        setPendingMode(newMode)
+        setQuitConfirmOpen(true)
+        return
+      }
       setTimerMode(newMode)
     },
-    [setTimerMode],
+    [setTimerMode, timer.isRunning, timer.mode],
   )
+
+  const confirmQuit = useCallback(() => {
+    if (pendingMode) {
+      setTimerMode(pendingMode)
+      setPendingMode(null)
+    }
+  }, [pendingMode, setTimerMode])
 
   // Timer countdown effect
   useEffect(() => {
@@ -507,6 +550,20 @@ export default function PomodoroTimer() {
             </div>
           </div>
 
+          {/* Ghost Mascot */}
+          <div className="flex justify-center mb-6">
+            <div className={`transition-all duration-500 ${timer.isRunning ? "animate-float" : "animate-float-slow"}`}>
+              <Image
+                src={currentGhost}
+                alt="Focus companion"
+                width={80}
+                height={80}
+                className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-lg"
+                priority
+              />
+            </div>
+          </div>
+
           <div className="flex justify-center items-center gap-3">
             <Button
               id="start-button"
@@ -627,6 +684,11 @@ export default function PomodoroTimer() {
         open={levelUpOpen}
         onOpenChange={setLevelUpOpen}
         level={level}
+      />
+      <QuitConfirmDialog
+        open={quitConfirmOpen}
+        onOpenChange={setQuitConfirmOpen}
+        onConfirm={confirmQuit}
       />
     </div>
   )

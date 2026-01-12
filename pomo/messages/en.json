@@ -138,5 +138,10 @@
   "onboarding.startHere": "You start your pomo here.",
   "onboarding.setTime": "Set pomo time here.",
 
-  "language.label": "Language"
+  "language.label": "Language",
+
+  "quit.title": "Quit focus?",
+  "quit.description": "Your progress won't be saved.",
+  "quit.stay": "Keep going",
+  "quit.leave": "Quit"
 }

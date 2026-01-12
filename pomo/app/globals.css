@@ -209,6 +209,25 @@
   animation: achievement-glow 1s ease-in-out 3;
 }
 
+/* Ghost floating animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+}
+
+.animate-float {
+  animation: float 2s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float-slow 3s ease-in-out infinite;
+}
+
 /* Driver.js onboarding styles */
 .driver-popover-description {
   font-size: 1.125rem !important;
