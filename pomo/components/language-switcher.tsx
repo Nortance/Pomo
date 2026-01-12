@@ -40,9 +40,23 @@ export function LanguageSwitcher() {
       to_label: newLocaleData?.label,
     });
 
-    const segments = pathname.split('/');
-    segments[1] = newLocale;
-    const newPath = segments.join('/');
+    // Get all locale codes to check if path has a locale prefix
+    const localeCodes = locales.map(l => l.code);
+    const segments = pathname.split('/').filter(Boolean);
+    const firstSegment = segments[0];
+    const hasLocalePrefix = localeCodes.includes(firstSegment);
+
+    // Extract the path without any locale prefix
+    // If on default locale (en), URL is /articles/slug (no prefix)
+    // If on other locales, URL is /fr/articles/slug (has prefix)
+    const pathWithoutLocale = hasLocalePrefix
+      ? '/' + segments.slice(1).join('/')
+      : pathname;
+
+    // Build new path with locale prefix
+    // The i18n middleware will handle redirects for default locale if needed
+    const newPath = `/${newLocale}${pathWithoutLocale}`;
+
     router.push(newPath);
   };
 
