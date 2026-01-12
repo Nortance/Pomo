@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest",
@@ -14,8 +14,10 @@
     "screenshot": "tsx scripts/screenshot.ts",
     "screenshot:mobile": "tsx scripts/screenshot.ts --mobile",
     "screenshot:single": "tsx scripts/screenshot.ts --single",
-    "ai-check": "python3 scripts/ai-detector.py",
-    "fetch-image": "tsx scripts/fetch-image.ts"
+    "ai-check": ".venv/bin/python scripts/ai-detector.py",
+    "fetch-image": "tsx scripts/fetch-image.ts",
+    "keywords": ".venv/bin/python scripts/keyword-research.py",
+    "webp": "tsx scripts/convert-to-webp.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
