@@ -489,7 +489,7 @@ export default function PomodoroTimer() {
 
         <div className="border border-border bg-card p-4 sm:p-8 mb-16 sm:mb-20 shadow-sm rounded-2xl">
           {/* Mode Tabs */}
-          <div className="flex justify-center gap-1 mb-6 sm:mb-10">
+          <div className="flex justify-center gap-1 mb-4 sm:mb-6">
             {(["pomodoro", "shortBreak", "longBreak"] as const).map((m) => (
               <button
                 key={m}
@@ -506,7 +506,7 @@ export default function PomodoroTimer() {
           </div>
 
           {/* Timer Display with Progress Ring */}
-          <div className="flex flex-col items-center mb-6 sm:mb-10">
+          <div className="flex flex-col items-center mb-4 sm:mb-6">
             <div className="relative">
               <svg className="w-72 h-72 sm:w-96 sm:h-96 -rotate-90" viewBox="0 0 300 300">
                 <circle
@@ -551,7 +551,7 @@ export default function PomodoroTimer() {
           </div>
 
           {/* Ghost Mascot */}
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-4">
             <div className={`transition-all duration-500 ${timer.isRunning ? "animate-float" : "animate-float-slow"}`}>
               <Image
                 src={currentGhost}
