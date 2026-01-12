@@ -23,10 +23,10 @@ const nextConfig: NextConfig = {
         source: '/mp/decide',
         destination: 'https://decide.mixpanel.com/decide',
       },
-      // Mixpanel API endpoints (track, engage, etc.)
+      // Mixpanel API endpoints (track, engage, etc.) - EU endpoint
       {
         source: '/mp/:slug*',
-        destination: 'https://api.mixpanel.com/:slug*',
+        destination: 'https://api-eu.mixpanel.com/:slug*',
       },
     ];
   },

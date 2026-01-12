@@ -4,3 +4,24 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# Mixpanel proxy (EU endpoints) - bypasses ad blockers
+[[redirects]]
+  from = "/mp/lib.min.js"
+  to = "https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js"
+  status = 200
+
+[[redirects]]
+  from = "/mp/lib.js"
+  to = "https://cdn.mxpnl.com/libs/mixpanel-2-latest.js"
+  status = 200
+
+[[redirects]]
+  from = "/mp/decide"
+  to = "https://decide.mixpanel.com/decide"
+  status = 200
+
+[[redirects]]
+  from = "/mp/*"
+  to = "https://api-eu.mixpanel.com/:splat"
+  status = 200
