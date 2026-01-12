@@ -36,10 +36,33 @@ const defaultSession: SessionState = {
   activeTaskId: null,
 }
 
+// Helper to save session to localStorage synchronously
+// This must be called INSIDE setState updater to guarantee it runs before navigation
+function syncSaveSession(session: SessionState): void {
+  const hasProgress = session.timer.timeLeft !== session.timer.startDuration ||
+                      session.timer.isRunning ||
+                      session.sessionPomodoros > 0
+
+  if (hasProgress) {
+    saveTimerSession({
+      mode: session.timer.mode,
+      timeLeft: session.timer.timeLeft,
+      startDuration: session.timer.startDuration,
+      isRunning: session.timer.isRunning,
+      savedAt: Date.now(),
+      sessionPomodoros: session.sessionPomodoros,
+      activeTaskId: session.activeTaskId,
+    })
+  }
+}
+
 export function useAppState() {
   const [persisted, setPersisted] = useState<PersistedState>(defaultState)
   const [session, setSession] = useState<SessionState>(defaultSession)
   const [isLoaded, setIsLoaded] = useState(false)
+
+  // Track isLoaded in a ref so we can access it synchronously in state updaters
+  const isLoadedRef = useRef(false)
 
   // Load persisted state from localStorage
   useEffect(() => {
@@ -76,8 +99,7 @@ export function useAppState() {
         activeTaskId: savedTimer.activeTaskId,
       })
 
-      // Clear saved session after restoring
-      clearTimerSession()
+      // Don't clear - we'll overwrite on next save anyway
     } else {
       // No saved session, initialize with settings
       const initialDuration = loaded.settings.pomodoro * 60
@@ -91,6 +113,7 @@ export function useAppState() {
       }))
     }
 
+    isLoadedRef.current = true
     setIsLoaded(true)
   }, [])
 
@@ -101,53 +124,9 @@ export function useAppState() {
     }
   }, [persisted, isLoaded])
 
-  // Save timer session on page unload (refresh/close) and periodically while running
-  useEffect(() => {
-    if (!isLoaded) return
-
-    const saveCurrentSession = () => {
-      // Only save if timer has been modified from default (user has interacted)
-      const hasProgress = session.timer.timeLeft !== session.timer.startDuration ||
-                          session.timer.isRunning ||
-                          session.sessionPomodoros > 0
-
-      if (hasProgress) {
-        saveTimerSession({
-          mode: session.timer.mode,
-          timeLeft: session.timer.timeLeft,
-          startDuration: session.timer.startDuration,
-          isRunning: session.timer.isRunning,
-          savedAt: Date.now(),
-          sessionPomodoros: session.sessionPomodoros,
-          activeTaskId: session.activeTaskId,
-        })
-      }
-    }
-
-    // Save on page unload
-    const handleBeforeUnload = () => {
-      saveCurrentSession()
-    }
-    window.addEventListener('beforeunload', handleBeforeUnload)
-
-    // Save on language change (client-side navigation doesn't trigger beforeunload)
-    const handleLanguageChange = () => {
-      saveCurrentSession()
-    }
-    window.addEventListener('language-change', handleLanguageChange)
-
-    // Periodic backup save every 10 seconds while timer is running
-    let intervalId: NodeJS.Timeout | null = null
-    if (session.timer.isRunning) {
-      intervalId = setInterval(saveCurrentSession, 10000)
-    }
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload)
-      window.removeEventListener('language-change', handleLanguageChange)
-      if (intervalId) clearInterval(intervalId)
-    }
-  }, [isLoaded, session])
+  // NOTE: Timer session is saved SYNCHRONOUSLY inside each state updater function
+  // This guarantees the save happens before any navigation can unmount the component
+  // See syncSaveSession() helper and its usage in setTimerRunning, setTimeLeft, etc.
 
   // Sync timer with settings when settings change (only if timer is at full duration / not started)
   useEffect(() => {
@@ -197,10 +176,14 @@ export function useAppState() {
       // Use provided focusMinutes (from startDuration) or fall back to current settings
       stats: addCompletedPomodoro(prev.stats, focusMinutes ?? prev.settings.pomodoro),
     }))
-    setSession((prev) => ({
-      ...prev,
-      sessionPomodoros: prev.sessionPomodoros + 1,
-    }))
+    setSession((prev) => {
+      const newSession = {
+        ...prev,
+        sessionPomodoros: prev.sessionPomodoros + 1,
+      }
+      if (isLoadedRef.current) syncSaveSession(newSession)
+      return newSession
+    })
   }, [])
 
   const recordSkip = useCallback(() => {
@@ -240,9 +223,12 @@ export function useAppState() {
       tasks: prev.tasks.filter((t) => t.id !== id),
     }))
     // Clear active task if it was deleted
-    setSession((prev) =>
-      prev.activeTaskId === id ? { ...prev, activeTaskId: null } : prev
-    )
+    setSession((prev) => {
+      if (prev.activeTaskId !== id) return prev
+      const newSession = { ...prev, activeTaskId: null }
+      if (isLoadedRef.current) syncSaveSession(newSession)
+      return newSession
+    })
   }, [])
 
   const completeTaskPomodoro = useCallback((taskId: string) => {
@@ -315,7 +301,11 @@ export function useAppState() {
   // === SESSION ACTIONS ===
 
   const setActiveTask = useCallback((taskId: string | null) => {
-    setSession((prev) => ({ ...prev, activeTaskId: taskId }))
+    setSession((prev) => {
+      const newSession = { ...prev, activeTaskId: taskId }
+      if (isLoadedRef.current) syncSaveSession(newSession)
+      return newSession
+    })
   }, [])
 
   const setTimerMode = useCallback((mode: TimerMode) => {
@@ -332,7 +322,7 @@ export function useAppState() {
           duration = persisted.settings.longBreak * 60
           break
       }
-      return {
+      const newSession = {
         ...prev,
         timer: {
           ...prev.timer,
@@ -342,14 +332,20 @@ export function useAppState() {
           isRunning: false
         },
       }
+      if (isLoadedRef.current) syncSaveSession(newSession)
+      return newSession
     })
   }, [persisted.settings])
 
   const setTimerRunning = useCallback((isRunning: boolean) => {
-    setSession((prev) => ({
-      ...prev,
-      timer: { ...prev.timer, isRunning },
-    }))
+    setSession((prev) => {
+      const newSession = {
+        ...prev,
+        timer: { ...prev.timer, isRunning },
+      }
+      if (isLoadedRef.current) syncSaveSession(newSession)
+      return newSession
+    })
   }, [])
 
   const setTimeLeft = useCallback((timeLeftOrUpdater: number | ((prev: number) => number)) => {
@@ -357,10 +353,12 @@ export function useAppState() {
       const newTimeLeft = typeof timeLeftOrUpdater === 'function'
         ? timeLeftOrUpdater(prev.timer.timeLeft)
         : timeLeftOrUpdater
-      return {
+      const newSession = {
         ...prev,
         timer: { ...prev.timer, timeLeft: newTimeLeft },
       }
+      if (isLoadedRef.current) syncSaveSession(newSession)
+      return newSession
     })
   }, [])
 
@@ -378,7 +376,7 @@ export function useAppState() {
           duration = persisted.settings.longBreak * 60
           break
       }
-      return {
+      const newSession = {
         ...prev,
         timer: {
           ...prev.timer,
@@ -387,11 +385,17 @@ export function useAppState() {
           isRunning: false
         },
       }
+      if (isLoadedRef.current) syncSaveSession(newSession)
+      return newSession
     })
   }, [persisted.settings])
 
   const resetSessionPomodoros = useCallback(() => {
-    setSession((prev) => ({ ...prev, sessionPomodoros: 0 }))
+    setSession((prev) => {
+      const newSession = { ...prev, sessionPomodoros: 0 }
+      if (isLoadedRef.current) syncSaveSession(newSession)
+      return newSession
+    })
   }, [])
 
   // === COMPUTED VALUES ===

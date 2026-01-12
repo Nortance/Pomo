@@ -40,10 +40,6 @@ export function LanguageSwitcher() {
       to_label: newLocaleData?.label,
     });
 
-    // Dispatch event to save timer state before navigation
-    // (client-side navigation doesn't trigger beforeunload)
-    window.dispatchEvent(new Event('language-change'));
-
     const segments = pathname.split('/');
     segments[1] = newLocale;
     const newPath = segments.join('/');
