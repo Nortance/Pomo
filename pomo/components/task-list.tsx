@@ -32,7 +32,6 @@ export function TaskList({ tasks, activeTaskId, onSelectTask, onAddTask, onUpdat
       <div className="flex items-center justify-between mb-3 sm:mb-4">
         <h2 className="text-xs sm:text-sm font-medium tracking-wide">{t('tasks.title')}</h2>
         <div className="flex items-center gap-1">
-          <kbd className="hidden sm:flex h-5 px-1.5 bg-muted text-muted-foreground text-[10px] items-center">T</kbd>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Task options">
