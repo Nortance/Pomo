@@ -444,14 +444,14 @@ export default function PomodoroTimer() {
       <main className="max-w-xl mx-auto px-4 py-6 sm:py-10">
         {isLoaded && <GoalProgress goalProgress={goalProgress} />}
 
-        <div className="border border-border bg-card p-4 sm:p-8 shadow-sm">
+        <div className="border border-border bg-card p-4 sm:p-8 mb-16 sm:mb-20 shadow-sm rounded-2xl">
           {/* Mode Tabs */}
           <div className="flex justify-center gap-1 mb-6 sm:mb-10">
             {(["pomodoro", "shortBreak", "longBreak"] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => switchMode(m)}
-                className={`px-3 sm:px-4 py-2 text-xs font-medium tracking-wide transition-all duration-200 ${
+                className={`px-3 sm:px-4 py-2 text-xs font-medium tracking-wide transition-all duration-200 rounded-full ${
                   timer.mode === m
                     ? "bg-foreground text-background border border-foreground"
                     : "text-muted-foreground border border-dashed border-border hover:text-foreground hover:border-foreground"
@@ -542,7 +542,7 @@ export default function PomodoroTimer() {
         </div>
 
         {/* Task List */}
-        <div className="mt-6 sm:mt-8">
+        <div>
           <TaskList
             tasks={tasks}
             activeTaskId={activeTaskId}
@@ -572,7 +572,7 @@ export default function PomodoroTimer() {
 
         {/* Premium Banner */}
         <Link href="/premium" className="block mt-6 sm:mt-8">
-          <div className="border border-border p-3 sm:p-4 flex items-center justify-between hover:bg-muted/50 transition-colors group">
+          <div className="border border-border p-3 sm:p-4 flex items-center justify-between hover:bg-muted/50 transition-colors group rounded-xl">
             <div className="flex items-center gap-2 sm:gap-3">
               <Sparkles className="h-4 w-4" />
               <span className="text-xs sm:text-sm">{t('premium.unlock')}</span>

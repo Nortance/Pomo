@@ -37,7 +37,7 @@ export function StatsCard({
   return (
     <div>
       <h2 className="text-xs sm:text-sm font-medium tracking-wide mb-3 sm:mb-4">{t('stats.title')}</h2>
-      <div className="border border-border bg-card">
+      <div className="border border-border bg-card rounded-xl overflow-hidden">
       {level && (
         <div className="border-b border-border px-4 sm:px-5 py-4 sm:py-5 bg-muted/30">
           <div className="flex items-center gap-4">

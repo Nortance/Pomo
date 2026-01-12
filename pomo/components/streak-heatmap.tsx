@@ -111,7 +111,7 @@ export function StreakHeatmap({ data }: StreakHeatmapProps) {
         <div className="flex items-center justify-between mb-3 sm:mb-4">
           <h3 className="text-xs sm:text-sm font-medium tracking-wide">{t('activity.title')}</h3>
         </div>
-        <div className="border border-border bg-card p-4 sm:p-5">
+        <div className="border border-border bg-card p-4 sm:p-5 rounded-xl">
           <div className="h-[140px] animate-pulse bg-muted rounded" />
         </div>
       </div>
@@ -133,7 +133,7 @@ export function StreakHeatmap({ data }: StreakHeatmapProps) {
         <h3 className="text-xs sm:text-sm font-medium tracking-wide">{t('activity.title')}</h3>
       </div>
 
-      <div className="border border-border bg-card p-4 sm:p-5">
+      <div className="border border-border bg-card p-4 sm:p-5 rounded-xl">
         {/* Day info - shows today by default, or hovered day */}
         <div className="h-5 mb-3">
           <p className="text-xs sm:text-sm text-muted-foreground">
