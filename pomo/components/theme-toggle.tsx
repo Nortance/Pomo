@@ -5,9 +5,16 @@ import { Moon, Sun, Monitor, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useTheme } from "@/components/theme-provider"
+import { track } from "@/lib/analytics"
+import { MixpanelEvents } from "@/lib/mixpanel-events"
 
 export function ThemeToggle() {
   const { theme, setTheme, resolvedTheme } = useTheme()
+
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme)
+    track(MixpanelEvents.THEME_CHANGED, { theme: newTheme })
+  }
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -30,22 +37,22 @@ export function ThemeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")} className="gap-2">
+        <DropdownMenuItem onClick={() => handleThemeChange("light")} className="gap-2">
           <Sun className="h-4 w-4" />
           Light
           {theme === "light" && <span className="ml-auto text-xs">✓</span>}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")} className="gap-2">
+        <DropdownMenuItem onClick={() => handleThemeChange("dark")} className="gap-2">
           <Moon className="h-4 w-4" />
           Dark
           {theme === "dark" && <span className="ml-auto text-xs">✓</span>}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("cute")} className="gap-2">
+        <DropdownMenuItem onClick={() => handleThemeChange("cute")} className="gap-2">
           <Heart className="h-4 w-4" />
           Cute
           {theme === "cute" && <span className="ml-auto text-xs">✓</span>}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")} className="gap-2">
+        <DropdownMenuItem onClick={() => handleThemeChange("system")} className="gap-2">
           <Monitor className="h-4 w-4" />
           System
           {theme === "system" && <span className="ml-auto text-xs">✓</span>}

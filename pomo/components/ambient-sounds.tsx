@@ -11,6 +11,8 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { Slider } from "@/components/ui/slider"
+import { track } from "@/lib/analytics"
+import { MixpanelEvents } from "@/lib/mixpanel-events"
 
 const AMBIENT_STORAGE_KEY = "codefocus-ambient"
 
@@ -134,6 +136,10 @@ export function AmbientSounds() {
     }
     setSettings(newSettings)
     saveSettings(newSettings)
+    track(MixpanelEvents.AMBIENT_SOUND_CHANGED, {
+      sound,
+      label: soundLabels[sound],
+    })
   }, [settings])
 
   const togglePlay = useCallback(() => {
@@ -141,6 +147,10 @@ export function AmbientSounds() {
     const newSettings = { ...settings, isPlaying: !settings.isPlaying }
     setSettings(newSettings)
     saveSettings(newSettings)
+    track(MixpanelEvents.AMBIENT_SOUND_TOGGLED, {
+      isPlaying: newSettings.isPlaying,
+      sound: settings.sound,
+    })
   }, [settings])
 
   const handleVolumeChange = useCallback((value: number[]) => {

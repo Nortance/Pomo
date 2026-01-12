@@ -10,6 +10,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Check } from 'lucide-react';
 import { US, ES, DE, FR, BR, JP, CN } from 'country-flag-icons/react/3x2';
+import { track } from '@/lib/analytics';
+import { MixpanelEvents } from '@/lib/mixpanel-events';
 
 const locales = [
   { code: 'en', label: 'English', Flag: US },
@@ -31,6 +33,17 @@ export function LanguageSwitcher() {
   const CurrentFlag = currentLocaleData.Flag;
 
   const handleChange = (newLocale: string) => {
+    const newLocaleData = locales.find(l => l.code === newLocale);
+    track(MixpanelEvents.LANGUAGE_CHANGED, {
+      from_locale: currentLocale,
+      to_locale: newLocale,
+      to_label: newLocaleData?.label,
+    });
+
+    // Dispatch event to save timer state before navigation
+    // (client-side navigation doesn't trigger beforeunload)
+    window.dispatchEvent(new Event('language-change'));
+
     const segments = pathname.split('/');
     segments[1] = newLocale;
     const newPath = segments.join('/');

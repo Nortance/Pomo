@@ -130,6 +130,12 @@ export function useAppState() {
     }
     window.addEventListener('beforeunload', handleBeforeUnload)
 
+    // Save on language change (client-side navigation doesn't trigger beforeunload)
+    const handleLanguageChange = () => {
+      saveCurrentSession()
+    }
+    window.addEventListener('language-change', handleLanguageChange)
+
     // Periodic backup save every 10 seconds while timer is running
     let intervalId: NodeJS.Timeout | null = null
     if (session.timer.isRunning) {
@@ -138,6 +144,7 @@ export function useAppState() {
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload)
+      window.removeEventListener('language-change', handleLanguageChange)
       if (intervalId) clearInterval(intervalId)
     }
   }, [isLoaded, session])
