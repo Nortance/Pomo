@@ -12,11 +12,6 @@ export interface ArticleFrontmatter {
   date: string;
   author: string;
   image?: string;
-  imageAttribution?: {
-    photographer: string;
-    photographerUrl: string;
-    source: 'unsplash' | 'pexels' | 'pixabay' | 'openai';
-  };
   tags?: string[];
   published?: boolean;
 }

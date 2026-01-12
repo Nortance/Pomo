@@ -106,41 +106,16 @@ export default async function ArticlePage({ params }: Props) {
       <article className="max-w-3xl mx-auto px-4 py-12">
         {/* Hero Image */}
         {frontmatter.image && (
-          <figure className="mb-8">
-            <div className="relative aspect-[2/1] overflow-hidden rounded-lg border border-border">
-              <Image
-                src={frontmatter.image}
-                alt={frontmatter.title}
-                fill
-                className="object-cover"
-                priority
-                sizes="(max-width: 768px) 100vw, 800px"
-              />
-            </div>
-            {frontmatter.imageAttribution && (
-              <figcaption className="mt-2 text-xs text-muted-foreground text-center">
-                Photo by{' '}
-                <a
-                  href={frontmatter.imageAttribution.photographerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline hover:text-foreground transition-colors"
-                >
-                  {frontmatter.imageAttribution.photographer}
-                </a>
-                {' '}on{' '}
-                <a
-                  href={`https://${frontmatter.imageAttribution.source}.com`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline hover:text-foreground transition-colors"
-                >
-                  {frontmatter.imageAttribution.source.charAt(0).toUpperCase() +
-                    frontmatter.imageAttribution.source.slice(1)}
-                </a>
-              </figcaption>
-            )}
-          </figure>
+          <div className="relative aspect-[2/1] overflow-hidden rounded-lg border border-border mb-8">
+            <Image
+              src={frontmatter.image}
+              alt={frontmatter.title}
+              fill
+              className="object-cover"
+              priority
+              sizes="(max-width: 768px) 100vw, 800px"
+            />
+          </div>
         )}
 
         {/* Title & Meta */}

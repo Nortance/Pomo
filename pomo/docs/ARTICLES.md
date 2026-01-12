@@ -25,11 +25,7 @@ title: "Your Article Title"
 description: "A compelling description for SEO"
 date: "2026-01-15"
 author: "CodeFocus Team"
-image: /images/articles/my-image.jpg  # Optional
-imageAttribution:                      # Required if image is set
-  photographer: "John Doe"
-  photographerUrl: "https://unsplash.com/@johndoe"
-  source: unsplash
+image: /images/articles/my-image.webp  # Optional
 tags:
   - pomodoro
   - productivity
@@ -37,16 +33,14 @@ published: true  # Set to false to hide
 ---
 ```
 
-### 3. Fetch Hero Image
+### 3. Generate Hero Image
 
 ```bash
-# Set your Unsplash API key (free)
-export UNSPLASH_ACCESS_KEY=your_key_here
+# Generate image with DALL-E 3 (requires OPENAI_API_KEY in .env.local)
+npm run generate-image -- "kawaii aesthetic desk setup with pink accessories" --name my-image
 
-# Fetch image
-npm run fetch-image -- "developer coding laptop" --name my-image
-
-# Copy the output to your frontmatter
+# Convert to WebP for optimization
+npm run webp -- public/images/articles --all
 ```
 
 ### 4. Write Content & Check AI Score
@@ -94,94 +88,40 @@ If a translation doesn't exist for a locale, the system automatically falls back
 
 ---
 
-## Fetching Images
+## Generating Images
+
+We use DALL-E 3 to generate kawaii/aesthetic images that match our brand.
 
 ### Setup (One-Time)
 
-1. Create free Unsplash account: https://unsplash.com/join
-2. Create app: https://unsplash.com/oauth/applications
-3. Copy Access Key
-4. Add to `.env.local`:
-   ```
-   UNSPLASH_ACCESS_KEY=your_key_here
-   ```
+Add to `.env.local`:
+```
+OPENAI_API_KEY=sk-...
+```
 
 ### Usage
 
 ```bash
-# Basic usage
-npm run fetch-image -- "search query" --name filename
+# Generate image (~$0.08 per image)
+npm run generate-image -- "kawaii prompt here" --name filename
 
 # Examples
-npm run fetch-image -- "pomodoro timer tomato" --name hero-pomodoro
-npm run fetch-image -- "developer focus coding" --name dev-focus
-npm run fetch-image -- "productivity workspace" --name workspace --size 800x400
+npm run generate-image -- "cute kawaii desk setup with pink accessories pastel colors" --name desk-hero
+npm run generate-image -- "aesthetic study space cozy lighting soft colors" --name study-hero
+
+# Convert to WebP for optimization (~95% smaller)
+npm run webp -- public/images/articles --all
 ```
 
 ### Output
 
-The script outputs:
-1. Image saved to `public/images/articles/{name}.jpg`
-2. Frontmatter snippet to copy
-3. `<ArticleImage>` component snippet for inline use
-
----
-
-## Image Attribution
-
-### ALWAYS Include Attribution
-
-Even though Unsplash/Pexels don't legally require it, we always attribute:
-
-1. **Hero images**: Use `imageAttribution` in frontmatter
-2. **Inline images**: Use `<ArticleImage>` component
-
-### Hero Image (Frontmatter)
-
-```yaml
-image: /images/articles/my-image.jpg
-imageAttribution:
-  photographer: "John Doe"
-  photographerUrl: "https://unsplash.com/@johndoe?utm_source=codefocus&utm_medium=referral"
-  source: unsplash  # or: pexels, pixabay
-```
-
-### Inline Images (Component)
-
-```jsx
-<ArticleImage
-  src="/images/articles/coding-setup.jpg"
-  alt="A developer's workspace with dual monitors"
-  photographer="Jane Smith"
-  photographerUrl="https://unsplash.com/@janesmith?utm_source=codefocus&utm_medium=referral"
-  source="unsplash"
-/>
-```
-
-### Attribution Format
-
-The component renders:
-```
-Photo by John Doe on Unsplash
-        ↑ linked      ↑ linked
-```
+1. Image saved to `public/images/articles/{name}.png`
+2. After WebP conversion: `public/images/articles/{name}.webp`
+3. Use `.webp` extension in frontmatter
 
 ---
 
 ## MDX Features
-
-### Available Components
-
-```jsx
-// Image with attribution
-<ArticleImage
-  src="/images/articles/example.jpg"
-  alt="Description"
-  photographer="Name"
-  photographerUrl="https://..."
-  source="unsplash"
-/>
-```
 
 ### Standard Markdown
 
@@ -201,7 +141,7 @@ Before publishing, verify:
 
 - [ ] **Title**: 50-60 characters, includes target keyword
 - [ ] **Description**: 150-160 characters, compelling
-- [ ] **Image**: Has attribution, optimized size (1200x630 for hero)
+- [ ] **Image**: Generated with DALL-E, converted to WebP
 - [ ] **AI Score**: 90%+ human score
 - [ ] **Word Count**: 1,500-2,500 words
 - [ ] **Tags**: 3-5 relevant tags
@@ -265,7 +205,8 @@ Review `docs/SEO-PLAN.md` Phase 3 (Humanization Rules) and:
 
 | Command | Description |
 |---------|-------------|
-| `npm run fetch-image -- "query" --name filename` | Fetch image from Unsplash |
+| `npm run generate-image -- "prompt" --name filename` | Generate image with DALL-E 3 |
+| `npm run webp -- public/images/articles --all` | Convert images to WebP |
 | `npm run ai-check -- --file path/to/article.mdx` | Check AI detection score |
 | `npm run dev` | Preview articles locally |
 | `npm run build` | Build for production |
