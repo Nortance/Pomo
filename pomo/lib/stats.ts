@@ -246,6 +246,11 @@ export function formatTotalTime(totalFocusMinutes: number): {
   }
 }
 
+// Maximum reasonable pomodoro duration in minutes (3 hours)
+const MAX_POMODORO_MINUTES = 180
+// Minimum reasonable pomodoro duration in minutes
+const MIN_POMODORO_MINUTES = 1
+
 /**
  * Update daily stats with a new completed pomodoro
  * @param stats - Current stats object
@@ -257,6 +262,19 @@ export function addCompletedPomodoro(
   pomodoroMinutes: number,
   today?: string
 ): Stats {
+  // Validate and clamp pomodoro duration to prevent unrealistic values
+  const validatedMinutes = Math.max(
+    MIN_POMODORO_MINUTES,
+    Math.min(pomodoroMinutes, MAX_POMODORO_MINUTES)
+  )
+
+  // Log if we had to clamp (for debugging purposes)
+  if (pomodoroMinutes !== validatedMinutes) {
+    console.warn(
+      `[CodeFocus] Clamped pomodoro duration from ${pomodoroMinutes} to ${validatedMinutes} minutes`
+    )
+  }
+
   const todayStr = today ?? getToday()
   const existingIndex = stats.dailyStats.findIndex((d) => d.date === todayStr)
   let newDailyStats: DayStats[]
@@ -267,7 +285,7 @@ export function addCompletedPomodoro(
         ? {
             ...d,
             completedPomodoros: d.completedPomodoros + 1,
-            focusMinutes: d.focusMinutes + pomodoroMinutes,
+            focusMinutes: d.focusMinutes + validatedMinutes,
           }
         : d
     )
@@ -278,7 +296,7 @@ export function addCompletedPomodoro(
         date: todayStr,
         completedPomodoros: 1,
         skippedPomodoros: 0,
-        focusMinutes: pomodoroMinutes,
+        focusMinutes: validatedMinutes,
       },
     ]
   }
@@ -291,7 +309,7 @@ export function addCompletedPomodoro(
     ...stats,
     currentStreak: newStreak,
     longestStreak: newLongestStreak,
-    totalFocusMinutes: stats.totalFocusMinutes + pomodoroMinutes,
+    totalFocusMinutes: stats.totalFocusMinutes + validatedMinutes,
     totalPomodoros: stats.totalPomodoros + 1,
     dailyStats: newDailyStats,
     lastActiveDate: todayStr,

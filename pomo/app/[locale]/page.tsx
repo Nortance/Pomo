@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useCallback, useState, useMemo } from "react"
+import { useEffect, useCallback, useState, useMemo, useRef } from "react"
 import dynamic from "next/dynamic"
 import Link from "next/link"
 import Image from "next/image"
@@ -21,6 +21,7 @@ import { StreakHeatmap } from "@/components/streak-heatmap"
 import { GoalProgress } from "@/components/goal-progress"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { checkNewAchievements } from "@/lib/achievements"
+import { loadTimerSession } from "@/lib/storage"
 import { track } from "@/lib/analytics"
 import { MixpanelEvents } from "@/lib/mixpanel-events"
 import { useAppState } from "@/hooks/use-app-state"
@@ -186,6 +187,40 @@ export default function PomodoroTimer() {
     }
   }, [level.tier, isLoaded, level.name, prevLevelTier, celebrateLevelUp])
 
+  // Guard to prevent double timer completion
+  const hasCompletedRef = useRef(false)
+
+  // Page Visibility API - sync timer when tab regains focus
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      // Only process when tab becomes visible and timer is running
+      if (document.hidden || !timer.isRunning) return
+
+      const savedTimer = loadTimerSession()
+      if (!savedTimer || !savedTimer.isRunning) return
+
+      // Calculate elapsed time since last save
+      const elapsedMs = Date.now() - savedTimer.savedAt
+      const elapsedSeconds = Math.floor(elapsedMs / 1000)
+
+      // Only adjust if significant time has passed (> 2 seconds)
+      // This prevents adjustment from normal 1-second saves
+      if (elapsedSeconds > 2) {
+        const newTimeLeft = Math.max(0, savedTimer.timeLeft - elapsedSeconds)
+
+        // Log the correction for debugging
+        console.log(
+          `[CodeFocus] Tab visibility sync: elapsed ${elapsedSeconds}s, adjusting timer from ${savedTimer.timeLeft}s to ${newTimeLeft}s`
+        )
+
+        setTimeLeft(newTimeLeft)
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [timer.isRunning, setTimeLeft])
+
   // Use startDuration for accurate progress (not affected by settings changes mid-timer)
   const progress = timer.startDuration > 0 ? 1 - timer.timeLeft / timer.startDuration : 0
   const circumference = 2 * Math.PI * 140
@@ -238,14 +273,28 @@ export default function PomodoroTimer() {
     let interval: NodeJS.Timeout
 
     if (timer.isRunning && timer.timeLeft > 0) {
+      // Reset completion guard when timer is actively running
+      hasCompletedRef.current = false
+
       interval = setInterval(() => {
         // Use functional update to avoid stale closure
         setTimeLeft((prev) => prev - 1)
       }, 1000)
-    } else if (timer.timeLeft === 0) {
+    } else if (timer.timeLeft === 0 && !hasCompletedRef.current) {
+      // Guard against double completion
+      hasCompletedRef.current = true
+
       if (timer.mode === "pomodoro") {
         // Pass actual focused duration (startDuration in minutes) for accurate tracking
         const xpEarned = Math.round(timer.startDuration / 60)
+
+        // Sanity check: reject unrealistic durations (max 3 hours = 180 minutes)
+        if (xpEarned > 180) {
+          console.warn(`[CodeFocus] Suspicious duration ${xpEarned} minutes, not recording`)
+          switchMode("shortBreak")
+          return
+        }
+
         recordPomodoro(xpEarned)
         track(MixpanelEvents.POMODORO_COMPLETED, {
           duration_minutes: xpEarned,

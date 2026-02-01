@@ -196,6 +196,9 @@ export function saveTimerSession(state: TimerSessionState): void {
   localStorage.setItem(TIMER_SESSION_KEY, JSON.stringify(state))
 }
 
+// Maximum reasonable timer duration in seconds (3 hours)
+const MAX_TIMER_DURATION_SECONDS = 3 * 60 * 60
+
 /**
  * Load timer session state from localStorage
  * Returns null if no saved state or if state is stale (> 24 hours old)
@@ -212,6 +215,27 @@ export function loadTimerSession(): TimerSessionState | null {
     // Discard if saved more than 24 hours ago (stale session)
     const maxAge = 24 * 60 * 60 * 1000 // 24 hours in ms
     if (Date.now() - parsed.savedAt > maxAge) {
+      clearTimerSession()
+      return null
+    }
+
+    // Validate startDuration is reasonable (max 3 hours)
+    if (parsed.startDuration > MAX_TIMER_DURATION_SECONDS || parsed.startDuration <= 0) {
+      console.warn('[CodeFocus] Invalid startDuration in saved session, clearing')
+      clearTimerSession()
+      return null
+    }
+
+    // Validate timeLeft is consistent with startDuration
+    if (parsed.timeLeft > parsed.startDuration || parsed.timeLeft < 0) {
+      console.warn('[CodeFocus] Inconsistent timeLeft in saved session, clearing')
+      clearTimerSession()
+      return null
+    }
+
+    // Validate savedAt is in the past and not too far in the future
+    if (parsed.savedAt > Date.now() + 60000) { // Allow 1 minute clock drift
+      console.warn('[CodeFocus] Future savedAt timestamp, clearing session')
       clearTimerSession()
       return null
     }
