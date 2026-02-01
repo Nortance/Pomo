@@ -1,0 +1,23 @@
+{
+  "project": "CodeFocus",
+  "description": "Pomodoro timer web app feature implementation",
+  "max_iterations": 20,
+  "context_files": [
+    "ralph/AGENT.md",
+    "ralph/progress.md"
+  ],
+  "git_safety_rules": [
+    "NEVER run git commit - user will commit manually",
+    "NEVER run git push",
+    "NEVER run git reset --hard or any destructive git commands",
+    "ONLY allowed git command: git status (read-only)",
+    "ONLY allowed git command: git diff (read-only)"
+  ],
+  "phase_rules": [
+    "Phase 0 (stories 0.x): Setup and verification",
+    "Phase 1 (stories 1.x): Core implementation",
+    "Phase 2 (stories 2.x): Testing and polish",
+    "Phase 3 (stories 3.x): Final verification"
+  ],
+  "stories": []
+}
